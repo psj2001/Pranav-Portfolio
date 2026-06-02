@@ -1,40 +1,26 @@
 import { useState } from 'react';
-import { BookOpen, GraduationCap, Laptop, Terminal, Quote, Star } from 'lucide-react';
+import { BookOpen, GraduationCap, Laptop, Quote, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import omarAlAwadi from '../assets/images/Omar Al Awadi.jpeg';
+import surajRS from '../assets/images/Suraj R S.png';
 
 const TESTIMONIALS = [
   {
-    quote: "Pranav delivered our multi-vendor kitchen listing system within a record timeframe. His mastery of Flutter and location-aware search transformed our dynamic home-food service in Dubai. Highly recommended!",
-    author: "Ahmed Al-Mansoori",
+    quote: "As Founder and CEO of Technologies, I relied on Pranav to fix critical bugs and implement new features across SMN Kitchen, Cooplus, and HRF Handicrafts. He’s fast, detail-oriented, and consistently delivers stable updates with clean, production-ready code.",
+    author: "Omar Al Awadi",
     role: "Founder & CEO",
-    company: "SMN Kitchens (Dubai)",
+    company: "Technologies",
     rating: 5,
-    avatar: "/src/assets/images/partner_dark_suit_1780401826336.png"
+    avatar: omarAlAwadi,
   },
   {
-    quote: "Integrating real-time WebRTC live video workouts and Stripe GCC payment channels was a complex task, but Pranav executed it perfectly. The codebase is clean, scalable, and beautifully structured.",
-    author: "Fahad Al-Shammari",
-    role: "Operations Director",
-    company: "MyFitBuddy (Kuwait)",
+    quote: "I'm the founder of Falcon Force, and Pranav built our full-stack CRM for managing clients, leads, and sales workflows. The system is fast, reliable, and exactly what our team needed to run operations day to day.",
+    author: "Suraj R S",
+    role: "Founder",
+    company: "Falcon Force",
     rating: 5,
-    avatar: "/src/assets/images/partner_al_shammari_1780401764134.png"
+    avatar: surajRS,
   },
-  {
-    quote: "Pranav is a brilliant software engineer. He revamped our complex property portal using Next.js and Google Maps SDK, boosting speed by 40% and delivering a highly intuitive user interface.",
-    author: "Marcus Keller",
-    role: "CTO",
-    company: "Casakey Real Estate (Dubai)",
-    rating: 5,
-    avatar: "/src/assets/images/partner_keller_1780401791864.png"
-  },
-  {
-    quote: "Our global talent matching platform Creova demands high-performance workflows. Pranav engineered robust cross-platform mobile logic, showcasing immaculate visual fidelity and performance structure.",
-    author: "Elias Rostov",
-    role: "Product Owner",
-    company: "CREOVA Platform",
-    rating: 5,
-    avatar: "/src/assets/images/partner_young_bearded_1780401809072.png"
-  }
 ];
 
 export default function MilestonesEducation() {
@@ -151,7 +137,7 @@ export default function MilestonesEducation() {
                         {t.author}
                       </div>
                       <div className="font-sans text-[10px] text-on-surface-variant truncate mt-0.5">
-                        {t.role}, {t.company.split(' ')[0]}
+                        {t.role}, {t.company}
                       </div>
                     </div>
                   </button>
@@ -201,31 +187,6 @@ export default function MilestonesEducation() {
                   <div className="font-sans text-xs sm:text-sm text-on-surface-variant leading-relaxed space-y-2">
                     <p>Developed strong knowledge in business, finance, accounting, and management fundamentals during the academic program.</p>
                     <p>Built analytical and problem-solving skills that support product development and business-oriented decision making.</p>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Technical Mastery Card */}
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.15 }}
-                className="glass-card p-6 sm:p-7 rounded-[2rem] border border-white/5 bg-gradient-to-br from-surface-container to-surface-dim flex items-start gap-4 sm:gap-5 group relative"
-              >
-                <div className="p-3.5 rounded-xl bg-secondary/10 border border-secondary/20 text-secondary shrink-0 mt-1 shadow-inner">
-                  <BookOpen size={24} />
-                </div>
-                <div className="space-y-2">
-                  <span className="font-mono text-[10px] text-secondary uppercase tracking-widest font-bold leading-none">
-                    Engineering Strategy • Specialization
-                  </span>
-                  <h3 className="font-display font-extrabold text-white text-base sm:text-lg">
-                    Technical Mastery & AI-first Engineering
-                  </h3>
-                  <div className="font-sans text-xs sm:text-sm text-on-surface-variant leading-relaxed space-y-2">
-                    <p>Expertise in architectural blueprints including Clean Architecture, SOLID, and feature-based architectures.</p>
-                    <p>Advanced proficiency with AI-assisted software delivery (Cursor AI, Claude, ChatGPT, GitHub Copilot) to ship optimized products rapidly and securely.</p>
                   </div>
                 </div>
               </motion.div>

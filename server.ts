@@ -6,7 +6,7 @@ import { GoogleGenAI } from "@google/genai";
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 app.use(express.json());
 
@@ -152,7 +152,11 @@ async function setupServer() {
   if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        // Express owns the HTTP port; a separate HMR WebSocket (24678) causes EADDRINUSE on restart.
+        hmr: false,
+      },
       appType: "spa",
     });
     app.use(vite.middlewares);

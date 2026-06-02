@@ -1,6 +1,7 @@
 import { Terminal, Download, ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import { downloadResume } from '../utils/resume';
+import { PROJECTS } from '../data/portfolioData';
 
 interface HeroProps {
   onNavigate: (id: string) => void;
@@ -10,6 +11,9 @@ export default function Hero({ onNavigate }: HeroProps) {
   const handleDownloadResume = () => {
     downloadResume();
   };
+
+  const mobileAppsCount = 12;
+  const websitesCount = PROJECTS.filter((p) => p.category === 'website').length;
 
   return (
     <section
@@ -40,11 +44,11 @@ export default function Hero({ onNavigate }: HeroProps) {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-4 px-6 w-full max-w-[600px] rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-sm font-mono text-[10px] text-on-surface-variant mx-auto">
           <div>
             <div className="text-outline uppercase tracking-wider mb-1">Mobile Apps</div>
-            <div className="text-white font-bold font-sans text-xs">10+ Apps Completed</div>
+            <div className="text-white font-bold font-sans text-xs">{mobileAppsCount} Apps Developed</div>
           </div>
           <div>
             <div className="text-outline uppercase tracking-wider mb-1">Web Engineering</div>
-            <div className="text-white font-bold font-sans text-xs">10+ Projects Done</div>
+            <div className="text-white font-bold font-sans text-xs">{websitesCount} Websites Developed</div>
           </div>
           <div>
             <div className="text-outline uppercase tracking-wider mb-1">Location</div>
