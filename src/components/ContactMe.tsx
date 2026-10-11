@@ -1,354 +1,264 @@
-import React, { useState, useEffect } from 'react';
-import { Mail, MapPin, Send, HelpCircle, CheckCircle2, ChevronDown, RefreshCw, Github, Linkedin, ExternalLink } from 'lucide-react';
-import { ContactInquiry } from '../types';
+import { useEffect, useState, type FormEvent } from 'react';
+import { Mail, MapPin, Send } from 'lucide-react';
 import { motion } from 'motion/react';
+import { profile } from '../data/siteContent';
 
-export default function ContactMe() {
+interface ContactMeProps {
+  defaultInterest?: string;
+  flutter?: boolean;
+  fullstack?: boolean;
+  marketing?: boolean;
+}
+
+const interests = [
+  'Mobile app development',
+  'Full-stack web development',
+  'Digital marketing',
+  'A role',
+];
+
+export default function ContactMe({
+  defaultInterest = 'Full-stack web development',
+  flutter = false,
+  fullstack = false,
+  marketing = false,
+}: ContactMeProps) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [interest, setInterest] = useState('Full-Stack Web Development');
+  const [interest, setInterest] = useState(defaultInterest);
   const [message, setMessage] = useState('');
-  
-  const [isSending, setIsSending] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [savedInquiries, setSavedInquiries] = useState<ContactInquiry[]>([]);
-  const [showInbox, setShowInbox] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [errors, setErrors] = useState<{ fullName?: string; email?: string; message?: string }>({});
 
-  // Sync inquiries with localStorage to support solid persistence
+  const accent = flutter ? 'text-[#027DFD]' : fullstack ? 'text-[#FF7A00]' : marketing ? 'text-[#FFD000]' : 'text-[#00e5e5]';
+  const ring = flutter ? 'focus-visible:border-[#027DFD]' : fullstack ? 'focus-visible:border-[#FF7A00]' : marketing ? 'focus-visible:border-[#FFD000]' : 'focus-visible:border-[#00e5e5]';
+  const button = flutter
+    ? 'bg-[#027DFD] text-white hover:bg-[#02569B]'
+    : fullstack
+      ? 'bg-[#FF7A00] text-[#1a1008] hover:bg-[#E06800]'
+      : marketing
+        ? 'bg-[#FFD000] text-[#1a1404] hover:bg-[#E6BC00]'
+        : 'bg-[#00e5e5] text-[#04181c] hover:bg-[#7af6f6]';
+
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('pranav_contact_inquiries');
-      if (stored) {
-        setSavedInquiries(JSON.parse(stored));
-      }
-    } catch (e) {
-      console.error("Local storage lookup failed:", e);
-    }
+    setInterest(defaultInterest);
+  }, [defaultInterest]);
+
+  useEffect(() => {
+    const onHire = (event: Event) => {
+      const interestValue = (event as CustomEvent<string>).detail;
+      if (interestValue && interests.includes(interestValue)) setInterest(interestValue);
+    };
+    window.addEventListener('portfolio-hire', onHire);
+    return () => window.removeEventListener('portfolio-hire', onHire);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!fullName.trim() || !email.trim() || !message.trim()) return;
-
-    setIsSending(true);
-
-    // Simulate sending network latency
-    setTimeout(() => {
-      const newInquiry: ContactInquiry = {
-        id: `inq-${Date.now()}`,
-        fullName,
-        email,
-        interest,
-        message,
-        timestamp: new Date().toLocaleString()
-      };
-
-      const updated = [newInquiry, ...savedInquiries];
-      setSavedInquiries(updated);
-      try {
-        localStorage.setItem('pranav_contact_inquiries', JSON.stringify(updated));
-      } catch (err) {
-        console.error("Local storage save failed:", err);
-      }
-
-      setIsSending(false);
-      setShowSuccess(true);
-      
-      // Reset fields
-      setFullName('');
-      setEmail('');
-      setInterest('Full-Stack Web Development');
-      setMessage('');
-    }, 1200);
+  const validate = () => {
+    const next: { fullName?: string; email?: string; message?: string } = {};
+    if (!fullName.trim()) next.fullName = 'Enter your name.';
+    if (!email.trim()) next.email = 'Enter your email.';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) next.email = 'Enter a valid email address.';
+    if (!message.trim()) next.message = 'Enter a message.';
+    setErrors(next);
+    return Object.keys(next).length === 0;
   };
 
-  const clearInquiries = () => {
-    setSavedInquiries([]);
-    localStorage.removeItem('pranav_contact_inquiries');
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    if (String(formData.get('bot-field') || '').trim()) {
+      setStatus('error');
+      return;
+    }
+    if (!validate()) {
+      setStatus('idle');
+      return;
+    }
+
+    setStatus('sending');
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: fullName.trim(),
+          email: email.trim(),
+          interest,
+          message: message.trim(),
+        }),
+      });
+      if (!response.ok) {
+        setStatus('error');
+        return;
+      }
+      setStatus('sent');
+      setFullName('');
+      setEmail('');
+      setInterest(defaultInterest);
+      setMessage('');
+      setErrors({});
+    } catch {
+      setStatus('error');
+    }
   };
 
   return (
-    <section id="contact" className="w-full relative py-20 overflow-hidden bg-mesh-glow border-t border-white/5">
-      <div className="max-w-7xl mx-auto px-6 relative z-10 space-y-16">
-        
-        {/* Section Title */}
-        <div className="flex flex-col items-center text-center space-y-4 max-w-2xl mx-auto">
-          <span className="font-display font-bold text-[11px] tracking-widest text-[#4cd7f6] uppercase">
-            Get In Touch
-          </span>
-          <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Let's Build Something Extraordinary Together
-          </h2>
-          <div className="h-1 w-12 bg-[#4cd7f6] rounded-full" />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start pt-4">
-          
-          {/* Left Column: Contact Pointers & Dubai Map (5 Cols) */}
-          <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.6 }}
-            className="lg:col-span-5 space-y-8 select-none"
-          >
-            
-            <div className="space-y-6">
-              <h3 className="font-display font-extrabold text-lg text-white">
-                Contact Parameters
-              </h3>
-              
-              {/* Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Location */}
-                <div className="glass-card p-5 rounded-2xl border border-white/5 bg-[#050508]/40 flex flex-col items-start gap-3">
-                  <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20">
-                    <MapPin size={18} />
-                  </div>
-                  <div>
-                    <h4 className="font-display font-bold text-xs text-on-surface-variant uppercase tracking-wider">Location</h4>
-                    <p className="font-sans text-sm text-white font-medium mt-0.5">Dubai, UAE</p>
-                  </div>
-                </div>
-
-                {/* Email Address */}
-                <a
-                  href="mailto:contact@pranavps.com"
-                  className="glass-card p-5 rounded-2xl border border-white/5 bg-[#050508]/40 flex flex-col items-start gap-3 hover:scale-101 duration-300"
-                >
-                  <div className="p-2.5 rounded-xl bg-secondary/10 text-secondary border border-secondary/20">
-                    <Mail size={18} />
-                  </div>
-                  <div>
-                    <h4 className="font-display font-bold text-xs text-on-surface-variant uppercase tracking-wider">Email</h4>
-                    <p className="font-sans text-xs sm:text-sm text-white font-medium mt-0.5 break-all">contact@pranavps.com</p>
-                  </div>
-                </a>
+    <section id="contact" className="relative z-10 scroll-mt-24 border-t border-white/10 bg-black py-16 lg:py-20">
+      <div className="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-12 lg:px-8">
+        <motion.div
+          className="lg:col-span-5"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.45 }}
+        >
+          <p className={`text-[11px] font-semibold uppercase tracking-[0.22em] ${accent}`}>Get in touch</p>
+          <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Tell me about the role or project.</h2>
+          <p className="mt-4 text-base leading-relaxed text-[#c5d2de]">
+            {profile.availability}. Send a message or email me directly.
+          </p>
+          <h3 className="mt-8 text-lg font-bold text-white">Contact details</h3>
+          <ul className="mt-4 space-y-3">
+            <li className="flex items-start gap-3 rounded-2xl border border-white/10 bg-[#07141c] p-4">
+              <MapPin aria-hidden="true" className={accent} size={18} />
+              <div>
+                <p className="text-sm font-semibold text-white">Location</p>
+                <p className="text-sm text-[#c5d2de]">{profile.location}</p>
               </div>
-            </div>
-
-            {/* Dubai Map Container - OpenStreetMap custom Iframe embed styled with subtle saturation */}
-            <div className="space-y-2">
-              <span className="font-display font-bold text-[10px] tracking-widest text-[#4cd7f6] uppercase">Dubai Operations Hub</span>
-              <div className="w-full h-[220px] rounded-2xl overflow-hidden border border-white/10 relative shadow-inner">
-                {/* Embedded OSM map centered around Dubai Marina / Palm Jumeirah region */}
-                <iframe
-                  title="Dubai UAE Geographic Map representation"
-                  width="100%"
-                  height="100%"
-                  frameBorder="0"
-                  scrolling="no"
-                  marginHeight={0}
-                  marginWidth={0}
-                  src="https://www.openstreetmap.org/export/embed.html?bbox=55.1000%2C25.0400%2C55.2600%2C25.1300&amp;layer=mapnik&amp;marker=25.0800%2C55.1500"
-                  style={{ filter: 'invert(90%) hue-rotate(185deg) brightness(85%) contrast(120%) grayscale(40%)' }}
-                  className="select-none pointer-events-auto"
-                ></iframe>
-                {/* Glow marker accent */}
-                <div className="absolute top-4 right-4 bg-[#030304]/90 border border-white/10 p-2 rounded-xl text-[10px] font-mono text-on-surface-variant backdrop-blur-md shadow-lg pointer-events-none">
-                  📍 Live Coordination Point
-                </div>
-              </div>
-            </div>
-
-            {/* Social Anchor button shortcuts */}
-            <div className="flex gap-3">
+            </li>
+            <li>
               <a
-                href="https://linkedin.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-3 bg-white/5 hover:bg-primary/20 border border-white/10 rounded-xl text-white transition-all cursor-pointer"
-                title="LinkedIn"
+                href={`mailto:${profile.email}`}
+                className="flex min-h-11 items-start gap-3 rounded-2xl border border-white/10 bg-[#07141c] p-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
-                <Linkedin size={18} />
+                <Mail aria-hidden="true" className={accent} size={18} />
+                <div>
+                  <p className="text-sm font-semibold text-white">Email</p>
+                  <p className="text-sm text-[#c5d2de]">{profile.email}</p>
+                </div>
               </a>
-              <a
-                href="https://github.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-3 bg-white/5 hover:bg-primary/20 border border-white/10 rounded-xl text-white transition-all cursor-pointer"
-                title="GitHub"
-              >
-                <Github size={18} />
-              </a>
-              <a
-                href="mailto:pranav.ulegendary@gmail.com"
-                className="p-3 bg-white/5 hover:bg-primary/20 border border-white/10 rounded-xl text-white transition-all cursor-pointer"
-                title="Direct Email Alternative"
-              >
-                <Mail size={18} />
-              </a>
-            </div>
+            </li>
+          </ul>
+        </motion.div>
 
-          </motion.div>
-
-          {/* Right Column: Contact Inquiry Form (7 Cols) */}
-          <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-            className="lg:col-span-7"
-          >
-            <div className="glass-card p-6 sm:p-8 rounded-[2rem] border border-white/5 bg-gradient-to-br from-surface-container-low to-surface-dim relative">
-              <h3 className="font-display font-extrabold text-lg sm:text-xl text-white mb-6">
-                Broadcast Inbound Transmission
-              </h3>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                
-                {/* Name */}
-                <div className="space-y-1.5">
-                  <label className="font-display font-bold text-[10px] tracking-wider text-on-surface-variant uppercase">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g., Sarah Jenkins"
-                    className="w-full bg-white/5 hover:bg-white/8 focus:bg-[#07070a] border border-white/10 focus:border-primary rounded-xl p-3.5 px-4 text-xs sm:text-sm text-white focus:outline-none transition-colors placeholder-on-surface-variant/30"
-                  />
-                </div>
-
-                {/* Email */}
-                <div className="space-y-1.5">
-                  <label className="font-display font-bold text-[10px] tracking-wider text-on-surface-variant uppercase">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="e.g., sarah@recruitingcorp.com"
-                    className="w-full bg-white/5 hover:bg-white/8 focus:bg-[#07070a] border border-white/10 focus:border-primary rounded-xl p-3.5 px-4 text-xs sm:text-sm text-white focus:outline-none transition-colors placeholder-on-surface-variant/30"
-                  />
-                </div>
-
-                {/* Select Dropdown Project Interest represented in designs */}
-                <div className="space-y-1.5 relative">
-                  <label className="font-display font-bold text-[10px] tracking-wider text-on-surface-variant uppercase">
-                    Project Interest
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={interest}
-                      onChange={(e) => setInterest(e.target.value)}
-                      className="w-full bg-white/5 hover:bg-white/8 focus:bg-[#07070a] border border-white/10 focus:border-primary rounded-xl p-3.5 px-4 pr-10 text-xs sm:text-sm text-white focus:outline-none transition-all appearance-none cursor-pointer"
-                    >
-                      <option className="bg-[#07070b] text-white" value="Full-Stack Web Development">Full-Stack Web Development (Next.js/React/Node.js)</option>
-                      <option className="bg-[#07070b] text-white" value="Cross-Platform Mobile App">Cross-Platform Mobile App (Flutter/React Native)</option>
-                      <option className="bg-[#07070b] text-white" value="Backend API Infrastructure">Backend API Support</option>
-                      <option className="bg-[#07070b] text-white" value="Permanent Career / Hiring Pitch">Full-Time Career Opportunities</option>
-                    </select>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
-                      <ChevronDown size={16} />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Message */}
-                <div className="space-y-1.5">
-                  <label className="font-display font-bold text-[10px] tracking-wider text-on-surface-variant uppercase">
-                    Inquiry Message
-                  </label>
-                  <textarea
-                    required
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    rows={4}
-                    placeholder="Describe your goals, requirements, or hiring pitch..."
-                    className="w-full bg-white/5 hover:bg-white/8 focus:bg-[#07070a] border border-white/10 focus:border-primary rounded-xl p-3.5 px-4 text-xs sm:text-sm text-white focus:outline-none transition-colors placeholder-on-surface-variant/30 resize-none"
-                  />
-                </div>
-
-                {/* Button */}
-                <button
-                  type="submit"
-                  disabled={isSending}
-                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary via-primary to-secondary text-white p-4.5 rounded-xl font-display font-extrabold text-xs tracking-wider uppercase transition-all duration-300 hover:scale-[1.01] active:scale-99 shadow-lg disabled:opacity-40 select-none cursor-pointer text-center"
-                >
-                  {isSending ? (
-                    <>
-                      <RefreshCw size={14} className="animate-spin text-white" />
-                      <span>Transmitting Broadcast...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Send size={14} />
-                      <span>Send Transmission</span>
-                    </>
-                  )}
-                </button>
-
-              </form>
-
-              {/* Secure Floating LocalStorage persist success alert */}
-              {showSuccess && (
-                <div className="absolute inset-0 bg-[#030304]/96 backdrop-blur-md rounded-[2rem] flex flex-col items-center justify-center text-center p-6 sm:p-8 animate-fade-in z-20">
-                  <div className="p-4 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 mb-4 animate-bounce">
-                    <CheckCircle2 size={36} />
-                  </div>
-                  <h4 className="font-display font-extrabold text-white text-lg sm:text-xl">Inquiry Received Successfully!</h4>
-                  <p className="font-sans text-xs sm:text-sm text-on-surface-variant max-w-sm mt-2 leading-relaxed">
-                    Thank you. Your message has been validated and persisted locally. Pranav's team receives notifications instantly.
+        <motion.div
+          className="lg:col-span-7"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.45, delay: 0.05 }}
+        >
+          <div className="rounded-3xl border border-white/10 bg-[#07141c] p-6 sm:p-8">
+            <h3 className="text-xl font-bold text-white">Send a message</h3>
+            <p className="mt-2 text-sm leading-relaxed text-[#c5d2de] sm:text-base">Tell me about the role or project you have in mind.</p>
+            <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
+              <p className="hidden">
+                <label htmlFor="bot-field">Don’t fill this in</label>
+                <input id="bot-field" name="bot-field" tabIndex={-1} autoComplete="off" />
+              </p>
+              <div>
+                <label htmlFor="contact-name" className="text-sm font-semibold text-white">
+                  Full name
+                </label>
+                <input
+                  id="contact-name"
+                  name="fullName"
+                  type="text"
+                  autoComplete="name"
+                  value={fullName}
+                  onChange={(event) => setFullName(event.target.value)}
+                  aria-invalid={Boolean(errors.fullName)}
+                  aria-describedby={errors.fullName ? 'contact-name-error' : undefined}
+                  className={`mt-2 min-h-11 w-full rounded-xl border border-white/15 bg-black px-4 text-base text-white outline-none ${ring}`}
+                />
+                {errors.fullName ? (
+                  <p id="contact-name-error" className="mt-2 text-sm text-[#ffb4b4]">
+                    {errors.fullName}
                   </p>
-                  <button
-                    onClick={() => setShowSuccess(false)}
-                    className="mt-6 p-2 px-6 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-white transition-all cursor-pointer"
-                  >
-                    Acknowledge
-                  </button>
-                </div>
-              )}
-            </div>
-            
-            {/* Persisted Messages View (Recruiter verification demo) */}
-            <div className="mt-6 flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <button
-                  onClick={() => setShowInbox(!showInbox)}
-                  className="text-[10px] font-mono tracking-widest text-[#4cd7f6] uppercase hover:underline cursor-pointer flex items-center gap-1"
-                >
-                  <span>{showInbox ? ' ocultar inbox' : ' inspect persistent inbox (' + savedInquiries.length + ')'}</span>
-                </button>
-                {savedInquiries.length > 0 && showInbox && (
-                  <button
-                    onClick={clearInquiries}
-                    className="text-[10px] font-mono text-rose-400 hover:underline cursor-pointer"
-                  >
-                    Clear All Records
-                  </button>
-                )}
+                ) : null}
               </div>
-
-              {showInbox && (
-                <div className="glass-card p-4 rounded-2xl border border-white/15 animate-fade-in space-y-3 bg-[#010101]/50">
-                  {savedInquiries.length === 0 ? (
-                    <p className="font-mono text-[10px] text-on-surface-variant/40">No records saved inside localStorage yet. Submit the form above!</p>
-                  ) : (
-                    <div className="space-y-3 max-h-[160px] overflow-y-auto pr-1">
-                      {savedInquiries.map((inq) => (
-                        <div key={inq.id} className="p-3 rounded-lg border border-white/5 bg-[#050508]/50 text-xs space-y-1.5 text-on-surface-variant">
-                          <div className="flex items-center justify-between text-[10px] font-mono text-primary">
-                            <span className="font-bold">{inq.fullName} ({inq.interest})</span>
-                            <span className="text-on-surface-variant/40 text-[9px]">{inq.timestamp}</span>
-                          </div>
-                          <p className="font-sans leading-relaxed text-white/90 italic">"{inq.message}"</p>
-                          <div className="text-[9px] font-mono text-on-surface-variant/40">Persistence address: localStorage://{inq.email}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-          </motion.div>
-
-        </div>
+              <div>
+                <label htmlFor="contact-email" className="text-sm font-semibold text-white">
+                  Email
+                </label>
+                <input
+                  id="contact-email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  aria-invalid={Boolean(errors.email)}
+                  aria-describedby={errors.email ? 'contact-email-error' : undefined}
+                  className={`mt-2 min-h-11 w-full rounded-xl border border-white/15 bg-black px-4 text-base text-white outline-none ${ring}`}
+                />
+                {errors.email ? (
+                  <p id="contact-email-error" className="mt-2 text-sm text-[#ffb4b4]">
+                    {errors.email}
+                  </p>
+                ) : null}
+              </div>
+              <div>
+                <label htmlFor="contact-interest" className="text-sm font-semibold text-white">
+                  What is this about?
+                </label>
+                <select
+                  id="contact-interest"
+                  name="interest"
+                  value={interest}
+                  onChange={(event) => setInterest(event.target.value)}
+                  className={`mt-2 min-h-11 w-full rounded-xl border border-white/15 bg-black px-4 text-base text-white outline-none ${ring}`}
+                >
+                  {interests.map((option) => (
+                    <option key={option} value={option} className="bg-black">
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="contact-message" className="text-sm font-semibold text-white">
+                  Message
+                </label>
+                <textarea
+                  id="contact-message"
+                  name="message"
+                  rows={5}
+                  value={message}
+                  onChange={(event) => setMessage(event.target.value)}
+                  aria-invalid={Boolean(errors.message)}
+                  aria-describedby={errors.message ? 'contact-message-error' : undefined}
+                  className={`mt-2 w-full rounded-xl border border-white/15 bg-black px-4 py-3 text-base text-white outline-none ${ring}`}
+                />
+                {errors.message ? (
+                  <p id="contact-message-error" className="mt-2 text-sm text-[#ffb4b4]">
+                    {errors.message}
+                  </p>
+                ) : null}
+              </div>
+              <button
+                type="submit"
+                disabled={status === 'sending'}
+                className={`inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-60 ${button}`}
+              >
+                <Send aria-hidden="true" size={16} />
+                {status === 'sending' ? 'Sending…' : 'Send message'}
+              </button>
+              <div aria-live="polite" className="min-h-6 text-sm">
+                {status === 'sent' ? <p className="text-[#b8f5c8]">Your message was sent. I’ll reply by email.</p> : null}
+                {status === 'error' ? (
+                  <p className="text-[#ffb4b4]">
+                    This message was not sent. Email{' '}
+                    <a className="underline" href={`mailto:${profile.email}`}>
+                      {profile.email}
+                    </a>{' '}
+                    instead.
+                  </p>
+                ) : null}
+              </div>
+            </form>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

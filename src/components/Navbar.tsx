@@ -1,11 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, Star } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import { blogDestination, blogFromPath, caseStudyFromPath, goHome, navigate, roleFromPath, scrollBehavior, usePathname } from '../routes';
 
 interface NavbarProps {
   activeSection: string;
+  flutter?: boolean;
+  fullstack?: boolean;
+  marketing?: boolean;
 }
 
-export default function Navbar({ activeSection }: NavbarProps) {
+export default function Navbar({ activeSection, flutter = false, fullstack = false, marketing = false }: NavbarProps) {
+  const pathname = usePathname();
+  const onRolePage = roleFromPath(pathname) !== null;
+  const onBlog = blogFromPath(pathname) !== null;
+  const onCase = caseStudyFromPath(pathname) !== null;
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -17,21 +25,76 @@ export default function Navbar({ activeSection }: NavbarProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileMenuOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [mobileMenuOpen]);
+
   const navItems = [
+    { id: 'home', label: 'Home' },
     { id: 'about', label: 'About' },
-    { id: 'skills', label: 'Skills' },
-    { id: 'experience', label: 'Experience' },
+    ...(flutter
+      ? [
+          { id: 'experience', label: 'Experience' },
+          { id: 'skills', label: 'Skills' },
+        ]
+      : [
+          { id: 'skills', label: 'Skills' },
+          { id: 'experience', label: 'Experience' },
+        ]),
     { id: 'projects', label: 'Projects' },
+    { id: 'blog', label: 'Blog' },
     { id: 'contact', label: 'Contact' },
   ];
 
+  const roleSections = new Set(['about', 'skills', 'experience', 'projects', 'contact']);
+  const activeText = flutter ? 'text-[#027DFD]' : fullstack ? 'text-[#FF7A00]' : marketing ? 'text-[#FFD000]' : 'text-[#00e5e5]';
+  const activeBar = flutter ? 'bg-[#027DFD]' : fullstack ? 'bg-[#FF7A00]' : marketing ? 'bg-[#FFD000]' : 'bg-[#00e5e5]';
+
   const handleScrollToSegment = (id: string) => {
     setMobileMenuOpen(false);
+    if (onBlog || onCase) {
+      if (id === 'blog') {
+        navigate(blogDestination(pathname));
+        return;
+      }
+      goHome(id);
+      return;
+    }
+    if (onRolePage && id === 'home') {
+      window.scrollTo({ top: 0, behavior: scrollBehavior() });
+      return;
+    }
+    if ((flutter || fullstack || marketing) && roleSections.has(id)) {
+      const element = document.getElementById(id);
+      if (element) {
+        const topOffset = element.getBoundingClientRect().top + window.scrollY - 85;
+        window.scrollTo({ top: topOffset, behavior: scrollBehavior() });
+        return;
+      }
+    }
+    if (onRolePage) {
+      goHome(id);
+      return;
+    }
     const element = document.getElementById(id);
     if (element) {
       const topOffset = element.getBoundingClientRect().top + window.scrollY - 85;
-      window.scrollTo({ top: topOffset, behavior: 'smooth' });
+      window.scrollTo({ top: topOffset, behavior: scrollBehavior() });
     }
+  };
+
+  const handleBrandClick = () => {
+    setMobileMenuOpen(false);
+    if (onRolePage || onBlog || onCase) {
+      goHome();
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: scrollBehavior() });
   };
 
 
@@ -41,33 +104,34 @@ export default function Navbar({ activeSection }: NavbarProps) {
       id="top-nav"
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         scrolled
-          ? 'bg-[#030304]/80 backdrop-blur-xl border-b border-white/5 py-3 shadow-[0_10px_30px_rgba(1,1,2,0.6)]'
+          ? 'bg-[#050b0e]/85 backdrop-blur-xl border-b border-white/5 py-3 shadow-[0_10px_30px_rgba(1,1,2,0.6)]'
           : 'bg-transparent py-5'
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
         {/* Brand Name */}
-        <div
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="font-display text-2xl font-extrabold text-white tracking-tight cursor-pointer selection:bg-none flex items-center gap-2 pr-4"
+        <button
+          type="button"
+          onClick={handleBrandClick}
+          className="flex cursor-pointer items-center gap-1.5 pr-4 font-sans text-[1.15rem] font-bold tracking-tight text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
         >
-          <span>Pranav P S</span>
-          <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse hidden md:inline-block h-2 w-2"></span>
-        </div>
+          <span>Pranav P S.</span>
+          <span className={`h-1.5 w-1.5 rounded-full ${flutter ? 'bg-[#027DFD]' : fullstack ? 'bg-[#FF7A00]' : marketing ? 'bg-[#FFD000]' : 'bg-[#00e5e5]'}`}></span>
+        </button>
 
         {/* Desktop Nav Items */}
-        <div className="hidden md:flex items-center gap-8 font-display text-xs uppercase tracking-wider font-semibold">
+        <div className="hidden md:flex items-center gap-5 font-sans text-[15px] font-medium lg:gap-7">
           {navItems.map((item) => (
             <button
               key={item.id}
-              className={`hover:text-primary transition-all duration-150 cursor-pointer relative py-2 ${
-                activeSection === item.id ? 'text-primary font-bold' : 'text-on-surface-variant'
+              className={`relative min-h-11 cursor-pointer py-2 transition-colors duration-150 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white ${
+                (item.id === 'blog' ? onBlog : !onBlog && activeSection === item.id) ? activeText : 'text-white/80'
               }`}
               onClick={() => handleScrollToSegment(item.id)}
             >
               {item.label}
-              {activeSection === item.id && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
+              {(item.id === 'blog' ? onBlog : !onBlog && activeSection === item.id) && (
+                <span className={`absolute bottom-0 left-0 right-0 h-0.5 rounded-full ${activeBar}`} />
               )}
             </button>
           ))}
@@ -76,8 +140,12 @@ export default function Navbar({ activeSection }: NavbarProps) {
         {/* Mobile menu trigger */}
         <div className="flex items-center gap-4 md:hidden">
           <button
+            type="button"
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-nav-panel"
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-lg border border-white/10 hover:bg-white/5 transition-all cursor-pointer text-white"
+            className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-lg border border-white/10 text-white hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -91,8 +159,8 @@ export default function Navbar({ activeSection }: NavbarProps) {
             <button
               key={item.id}
               onClick={() => handleScrollToSegment(item.id)}
-              className={`text-left text-sm uppercase tracking-widest font-semibold p-2 border-b border-white/5 cursor-pointer ${
-                activeSection === item.id ? 'text-primary' : 'text-on-surface-variant'
+              className={`min-h-11 cursor-pointer border-b border-white/5 p-2 text-left text-[15px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                (item.id === 'blog' ? onBlog : !onBlog && activeSection === item.id) ? activeText : 'text-white/80'
               }`}
             >
               {item.label}

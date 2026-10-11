@@ -1,0 +1,26 @@
+---
+description: Animate the hero without changing its visual design
+globs: src/components/Hero.tsx
+alwaysApply: false
+---
+
+# Hero motion
+
+Do not change the hero layout, copy, colors, spacing, or controls. Animation must finish on the current design.
+
+- Motion fades and lifts existing text, portrait, buttons, and hire actions.
+- Anime.js draws the existing teal caption rule and counts the existing year stats.
+- Leave hover styles on the buttons as they are.
+- Do not add sections, icons, or background effects.
+
+```tsx
+// ❌ BAD — restyles the heading while adding motion
+<motion.h1 className="text-center text-6xl text-primary" />
+
+// ✅ GOOD — same classes, entrance only
+<motion.h1
+  className="mt-5 font-sans text-[clamp(2.7rem,4.5vw,4.35rem)] font-extrabold leading-[0.96] tracking-[-0.035em] text-white"
+  initial={{ opacity: 0, y: 18 }}
+  animate={{ opacity: 1, y: 0 }}
+/>
+```

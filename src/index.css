@@ -132,6 +132,26 @@ html {
   scroll-behavior: smooth;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .about-reveal,
+  .what-i-do-reveal,
+  .experience-reveal,
+  .hero-reveal,
+  .skills-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid #f4f7fb;
+  outline-offset: 3px;
+}
+
 body {
   margin: 0;
   padding: 0;

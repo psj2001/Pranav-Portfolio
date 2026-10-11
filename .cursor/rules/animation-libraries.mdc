@@ -1,0 +1,25 @@
+---
+description: Use Anime.js and Motion on separate elements and properties
+globs: src/components/**/*.tsx
+alwaysApply: false
+---
+
+# Animation libraries
+
+Motion (`motion/react`) owns entrance and hover: opacity and a 16–24px move, about 450–700ms, played once.
+
+Anime.js v4 (`animejs`) owns SVG stroke drawing, arrowheads, and number counts. Import `animate`, `createTimeline`, and `svg` from `animejs`. Draw with `svg.createDrawable()` and `draw: ['0 0', '0 1']`. Update object values in `onRender`.
+
+Never animate the same property on the same element with both libraries.
+
+```tsx
+// ❌ BAD — both libraries animate opacity on the card
+animate(card, { opacity: [0, 1] });
+<motion.article animate={{ opacity: 1 }} />
+
+// ✅ GOOD — Motion moves the card; Anime.js draws the connector
+<motion.article initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} />
+animate(svg.createDrawable(path)[0], { draw: ['0 0', '0 1'], duration: 620 });
+```
+
+Respect `prefers-reduced-motion` by showing the finished state immediately. Cancel anime instances and disconnect observers on unmount.

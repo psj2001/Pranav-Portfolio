@@ -1,0 +1,13 @@
+/* Suggested implementation values matching the visual mockup. */
+:root {
+  --hero-background: #050b0e;
+  --hero-accent: #00e5e5;
+  --hero-text: #ffffff;
+  --hero-muted: #a7b5c5;
+  --hero-border: #25434b;
+  --hero-font: Arial, Helvetica, sans-serif;
+}
+/* Recreate the portrait glow in CSS, rather than as a bitmap asset. */
+.portrait-glow {
+  background: radial-gradient(ellipse at center, rgba(0,229,229,.22), transparent 68%);
+}
