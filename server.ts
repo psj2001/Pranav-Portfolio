@@ -1,4 +1,5 @@
 import express from "express";
+import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
@@ -152,9 +153,19 @@ async function setupServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
+    app.use(express.static(distPath, { index: false, redirect: false }));
+    app.use((req, res, next) => {
+      if (req.method !== "GET" && req.method !== "HEAD") return next();
+      const requestPath = decodeURIComponent(req.path);
+      const relative = requestPath === "/" ? "index.html" : `${requestPath.replace(/^\//, "").replace(/\/$/, "")}/index.html`;
+      const file = path.normalize(path.join(distPath, relative));
+      if (!file.startsWith(`${distPath}${path.sep}`) && file !== path.join(distPath, "index.html")) {
+        return res.status(400).end();
+      }
+      if (fs.existsSync(file)) return res.sendFile(file);
+      const shell = path.join(distPath, "index.html");
+      if (fs.existsSync(shell)) return res.sendFile(shell);
+      res.status(404).sendFile(path.join(distPath, "404.html"));
     });
   }
 

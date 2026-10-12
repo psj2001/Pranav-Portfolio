@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { BookOpen, GraduationCap } from 'lucide-react';
 import { motion } from 'motion/react';
+import { entranceInitial } from './entrance';
 import { education, formatPeriod, training } from '../data/siteContent';
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
@@ -40,7 +41,7 @@ export default function Education({
     >
       <div className="mx-auto max-w-3xl px-6 py-20 lg:px-8 lg:py-24">
         <motion.header
-          initial={reduced ? false : { opacity: 0, y: 20 }}
+          initial={entranceInitial(reduced, { opacity: 0, y: 20 })}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '0px 0px -8% 0px' }}
           transition={{ duration: 0.55, ease: easeOut }}
@@ -56,28 +57,33 @@ export default function Education({
           </h2>
         </motion.header>
 
-        <motion.article
-          className={`mt-10 border-t pt-6 ${border}`}
-          initial={reduced ? false : { opacity: 0, y: 18 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '0px 0px -8% 0px' }}
-          transition={{ duration: 0.55, delay: reduced ? 0 : 0.08, ease: easeOut }}
-        >
-          <div className="flex items-start gap-4">
-            <span className={`mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${icon}`}>
-              <GraduationCap aria-hidden="true" size={20} strokeWidth={1.75} />
-            </span>
-            <div>
-              <p className={`text-sm font-semibold ${accentText}`}>
-                {education.school} · {education.period}
-              </p>
-              <h3 className="mt-2 text-lg font-bold tracking-tight text-white sm:text-xl">{education.credential}</h3>
-              <p className="mt-3 text-sm leading-relaxed text-[#c5d2de] sm:text-base">
-                Business, finance, accounting, and management, studied at {education.school}.
-              </p>
-            </div>
-          </div>
-        </motion.article>
+        <div className="mt-10 space-y-6">
+          {education.map((item) => (
+            <motion.article
+              key={item.credential}
+              className={`border-t pt-6 ${border}`}
+              initial={entranceInitial(reduced, { opacity: 0, y: 18 })}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '0px 0px -8% 0px' }}
+              transition={{ duration: 0.55, delay: reduced ? 0 : 0.08, ease: easeOut }}
+            >
+              <div className="flex items-start gap-4">
+                <span className={`mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${icon}`}>
+                  <GraduationCap aria-hidden="true" size={20} strokeWidth={1.75} />
+                </span>
+                <div>
+                  <p className={`text-sm font-semibold ${accentText}`}>
+                    {item.school} · {item.period}
+                  </p>
+                  <h3 className="mt-2 text-lg font-bold tracking-tight text-white sm:text-xl">{item.credential}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-[#c5d2de] sm:text-base">
+                    {item.detail} Studied at {item.school}.
+                  </p>
+                </div>
+              </div>
+            </motion.article>
+          ))}
+        </div>
 
         {training.length > 0 ? (
           <div id="training" className="mt-12">
@@ -87,7 +93,7 @@ export default function Education({
                 <motion.article
                   key={item.id}
                   className={`border-t pt-6 ${border}`}
-                  initial={reduced ? false : { opacity: 0, y: 18 }}
+                  initial={entranceInitial(reduced, { opacity: 0, y: 18 })}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: '0px 0px -8% 0px' }}
                   transition={{ duration: 0.55, delay: reduced ? 0 : 0.08, ease: easeOut }}

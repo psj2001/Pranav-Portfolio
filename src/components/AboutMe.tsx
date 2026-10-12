@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { education, profile } from '../data/siteContent';
+import { entranceInitial } from './entrance';
+import { profile } from '../data/siteContent';
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
 
 const facts = [
   { label: 'Based in', value: profile.location },
   { label: 'Availability', value: profile.availability },
-  { label: 'Education', value: `${education.credential}, ${education.school}` },
+  {
+    label: 'Education',
+    value: 'B.Com, Calicut University',
+  },
 ];
 
 function usePrefersReducedMotion() {
@@ -37,7 +41,7 @@ export default function AboutMe({ variant = 'home' }: { variant?: 'home' | 'flut
       <div className="mx-auto max-w-3xl px-6 py-20 lg:px-8 lg:py-24">
         <motion.header
           className="about-reveal"
-          initial={reduced ? false : { opacity: 0, y: 20 }}
+          initial={entranceInitial(reduced, { opacity: 0, y: 20 })}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '0px 0px -8% 0px' }}
           transition={{ duration: 0.55, ease: easeOut }}
@@ -71,7 +75,7 @@ export default function AboutMe({ variant = 'home' }: { variant?: 'home' | 'flut
 
         <motion.div
           className="about-reveal mt-6 space-y-4 text-base leading-relaxed text-[#a7b5c5] sm:text-lg"
-          initial={reduced ? false : { opacity: 0, y: 16 }}
+          initial={entranceInitial(reduced, { opacity: 0, y: 16 })}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '0px 0px -8% 0px' }}
           transition={{ duration: 0.55, delay: reduced ? 0 : 0.08, ease: easeOut }}
@@ -100,7 +104,7 @@ export default function AboutMe({ variant = 'home' }: { variant?: 'home' | 'flut
                 I created the ChooseMy Fresh website, managed its social media platforms, and worked on its website SEO.
               </p>
               <p>
-                I also work on social content and website updates: the posts, page copy, and landing pages that explain a product. Paid advertising is not part of this page.
+                I also work on social content, SEO, and ads, including Meta Ads, Google Ads, and WhatsApp automation.
               </p>
             </>
           ) : (
@@ -118,7 +122,7 @@ export default function AboutMe({ variant = 'home' }: { variant?: 'home' | 'flut
         {variant === 'home' ? (
           <motion.dl
             className="about-reveal mt-10 grid gap-4 sm:grid-cols-3"
-            initial={reduced ? false : { opacity: 0, y: 16 }}
+            initial={entranceInitial(reduced, { opacity: 0, y: 16 })}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '0px 0px -8% 0px' }}
             transition={{ duration: 0.55, delay: reduced ? 0 : 0.16, ease: easeOut }}
@@ -126,7 +130,7 @@ export default function AboutMe({ variant = 'home' }: { variant?: 'home' | 'flut
             {facts.map((fact) => (
               <div key={fact.label} className="border-t border-white/15 pt-4">
                 <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8ea0b0]">{fact.label}</dt>
-                <dd className="mt-2 text-sm leading-snug text-white sm:text-[15px]">{fact.value}</dd>
+                <dd className="mt-2 whitespace-pre-line text-sm leading-snug text-white sm:text-[15px]">{fact.value}</dd>
               </div>
             ))}
           </motion.dl>

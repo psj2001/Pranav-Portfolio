@@ -1,0 +1,24 @@
+Options -Indexes
+RewriteEngine On
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+<Files "config.php">
+  Require all denied
+</Files>
+
+<Files "config.example.php">
+  Require all denied
+</Files>
+
+<Files "schema.sql">
+  Require all denied
+</Files>
+
+<Files "seed.sql">
+  Require all denied
+</Files>
+
+<Files "seed-data.json">
+  Require all denied
+</Files>

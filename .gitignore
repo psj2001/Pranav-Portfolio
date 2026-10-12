@@ -6,3 +6,6 @@ coverage/
 *.log
 .env*
 !.env.example
+php-api/config.php
+php-api/uploads/projects/*
+!php-api/uploads/projects/.gitkeep

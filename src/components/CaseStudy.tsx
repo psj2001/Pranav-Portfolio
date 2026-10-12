@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { navigate } from '../routes';
+import RouteLink from './RouteLink';
+import { entranceInitial } from './entrance';
 import { accentForProduct } from './ProjectCard';
 import {
   contributionKindLabel,
@@ -35,14 +36,13 @@ export default function CaseStudy({ project }: { project: ProjectItem }) {
   return (
     <article className="relative z-10 scroll-mt-24 px-6 pb-20 pt-28 sm:pt-32">
       <div className="mx-auto max-w-3xl">
-        <motion.div initial={reduced ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
-          <button
-            type="button"
-            onClick={() => navigate(back)}
-            className={`min-h-11 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${tone}`}
+        <motion.div initial={entranceInitial(reduced, { opacity: 0, y: 16 })} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
+          <RouteLink
+            href={back}
+            className={`inline-flex min-h-11 items-center text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${tone}`}
           >
             Back to projects
-          </button>
+          </RouteLink>
           <p className={`mt-8 text-[11px] font-semibold uppercase tracking-[0.22em] ${tone}`}>
             {types.map((type) => productTypeLabel(type)).join(' · ')}
           </p>

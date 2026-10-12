@@ -4,7 +4,8 @@ import Education from './Education';
 import ExperienceProjects from './ExperienceProjects';
 import SkillsArsenal from './SkillsArsenal';
 import WorkExperience from './WorkExperience';
-import { BLOG_TRACKS, ROLE_ROUTES, navigate, type RoleId } from '../routes';
+import { BLOG_TRACKS, ROLE_ROUTES, type RoleId } from '../routes';
+import RouteLink from './RouteLink';
 
 export default function RolePage({ role }: { role: RoleId }) {
   const flutter = role === 'flutter';
@@ -38,7 +39,7 @@ export default function RolePage({ role }: { role: RoleId }) {
               : {
                   kicker: 'Marketing work',
                   title: 'ChooseMy Fresh.',
-                  body: 'I created the ChooseMy Fresh website, managed its social media platforms, and worked on its website SEO. I also work on social content and other website updates. Paid advertising is not part of this page.',
+                  body: 'I created the ChooseMy Fresh website, managed its social media platforms, and worked on its website SEO. I also work on social content, SEO, Meta Ads, Google Ads, and WhatsApp automation.',
                 }
         }
       />
@@ -51,13 +52,12 @@ export default function RolePage({ role }: { role: RoleId }) {
               {marketing ? 'Notes on social content and websites.' : 'Notes on building products.'}
             </h2>
           </div>
-          <button
-            type="button"
-            onClick={() => navigate(marketing ? BLOG_TRACKS.marketing.path : BLOG_TRACKS.software.path)}
+          <RouteLink
+            href={marketing ? BLOG_TRACKS.marketing.path : BLOG_TRACKS.software.path}
             className={`inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border px-5 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${border}`}
           >
             {marketing ? 'Read the marketing blog' : 'Read the software blog'}
-          </button>
+          </RouteLink>
         </div>
       </section>
       <ContactMe defaultInterest={ROLE_ROUTES[role].interest} flutter={flutter} fullstack={fullstack} marketing={marketing} />

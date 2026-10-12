@@ -1,0 +1,29 @@
+---
+description: When creating a zip to upload to the Hostinger server, record which features that zip includes
+alwaysApply: true
+---
+
+# Server upload zip
+
+When you create a zip to upload to pranavps.com, update `SERVER_UPLOAD.md` and put that same file inside the zip.
+
+The note says how far the work goes in this upload:
+
+- Features included, and the site or API files that carry them
+- What is still not on the server after this upload (for example the phone app binary, or a feature that exists only in the repo)
+
+Replace the previous note. Do not leave a description of an older zip.
+
+```markdown
+# Server upload
+
+Built: 2026-10-12
+
+## Included
+- Blog posts can be published from the API and opened on the site.
+
+## Not in this upload
+- The Flutter app binary. Install that on the phone separately.
+```
+
+Do not put secrets in the zip or the note: `php-api/config.php`, `.env`, `.env.local`, or files already stored under `php-api/uploads/`.

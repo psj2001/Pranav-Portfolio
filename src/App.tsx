@@ -12,14 +12,25 @@ import RolePage from './components/RolePage';
 import BlogArticle from './components/BlogArticle';
 import CaseStudy from './components/CaseStudy';
 import { BlogHub, BlogTrackIndex } from './components/BlogIndex';
+import { usePortfolioReady } from './components/PortfolioLoader';
 import { usePageMeta } from './components/usePageMeta';
 import { findPublicProject } from './data/siteContent';
 import { accentForProduct } from './components/ProjectCard';
-import { blogFromPath, caseStudyFromPath, roleFromPath, scrollBehavior, usePathname } from './routes';
+import { BLOG_HUB_PATH, blogFromPath, caseStudyFromPath, ROLE_ROUTES, roleFromPath, scrollBehavior, usePathname } from './routes';
+import { markEntranceReady } from './components/entrance';
+import RouteLink from './components/RouteLink';
 import { Terminal } from 'lucide-react';
 
-export default function App() {
-  const pathname = usePathname();
+const footerLinks = [
+  { href: ROLE_ROUTES.flutter.path, label: 'Flutter developer' },
+  { href: ROLE_ROUTES.fullstack.path, label: 'Full-stack developer' },
+  { href: ROLE_ROUTES.marketing.path, label: 'Digital marketer' },
+  { href: BLOG_HUB_PATH, label: 'Blog' },
+  { href: '/#contact', label: 'Contact' },
+];
+
+export default function App({ initialPath = '/' }: { initialPath?: string }) {
+  const pathname = usePathname(initialPath);
   const role = roleFromPath(pathname);
   const blog = blogFromPath(pathname);
   const caseSlug = caseStudyFromPath(pathname);
@@ -27,9 +38,14 @@ export default function App() {
   const blogTrack = blog && blog.kind !== 'hub' ? blog.track : null;
   const caseAccent = caseProject ? accentForProduct(caseProject.productType) : null;
   const [activeSection, setActiveSection] = useState('home');
+  const postsReady = usePortfolioReady();
   const missing = pathname !== '/' && !role && !blog && !caseSlug;
 
-  usePageMeta(pathname);
+  usePageMeta(pathname, postsReady);
+
+  useEffect(() => {
+    markEntranceReady();
+  }, []);
 
   useEffect(() => {
     if (role || blog || caseSlug) {
@@ -152,6 +168,13 @@ export default function App() {
             />
             <span className="text-xs font-extrabold uppercase tracking-wide">Pranav P S</span>
           </div>
+          <nav aria-label="Site" className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
+            {footerLinks.map((link) => (
+              <RouteLink key={link.href} href={link.href} className="text-[#c5d2de] hover:text-white">
+                {link.label}
+              </RouteLink>
+            ))}
+          </nav>
           <div className="font-mono text-[10px] uppercase tracking-widest text-[#a4afd5]/30">© 2026 Pranav P S. All rights reserved.</div>
         </div>
       </footer>

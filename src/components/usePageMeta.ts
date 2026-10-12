@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { canonicalUrl, pageMetaForPath, personSchema } from '../data/pageMeta';
+import { canonicalUrl, pageMetaForPath, structuredData } from '../data/pageMeta';
 import { SITE_URL, profile } from '../data/siteContent';
 
 function upsertMeta(attribute: 'name' | 'property', key: string, content: string) {
@@ -22,14 +22,24 @@ function upsertCanonical(href: string) {
   element.href = href;
 }
 
-export function usePageMeta(pathname: string) {
+function upsertRobots(content?: string) {
+  const existing = document.head.querySelector<HTMLMetaElement>('meta[name="robots"]');
+  if (!content) {
+    existing?.remove();
+    return;
+  }
+  upsertMeta('name', 'robots', content);
+}
+
+export function usePageMeta(pathname: string, ready = false) {
   useEffect(() => {
     const page = pageMetaForPath(pathname);
     const url = canonicalUrl(page.path);
     document.title = page.title;
     upsertMeta('name', 'description', page.description);
+    upsertRobots(page.robots);
     upsertCanonical(url);
-    upsertMeta('property', 'og:type', 'website');
+    upsertMeta('property', 'og:type', page.kind === 'article' ? 'article' : 'website');
     upsertMeta('property', 'og:site_name', profile.name);
     upsertMeta('property', 'og:title', page.title);
     upsertMeta('property', 'og:description', page.description);
@@ -40,22 +50,6 @@ export function usePageMeta(pathname: string) {
     upsertMeta('name', 'twitter:description', page.description);
     upsertMeta('name', 'twitter:image', `${SITE_URL}/og-portrait.jpg`);
 
-    const structured =
-      page.path === '/'
-        ? personSchema()
-        : {
-            '@context': 'https://schema.org',
-            '@type': 'WebPage',
-            name: page.title,
-            url,
-            description: page.description,
-            isPartOf: {
-              '@type': 'WebSite',
-              name: profile.name,
-              url: `${SITE_URL}/`,
-            },
-          };
-
     let script = document.getElementById('page-jsonld');
     if (!script) {
       script = document.createElement('script');
@@ -63,6 +57,6 @@ export function usePageMeta(pathname: string) {
       script.setAttribute('type', 'application/ld+json');
       document.head.appendChild(script);
     }
-    script.textContent = JSON.stringify(structured);
-  }, [pathname]);
+    script.textContent = JSON.stringify(structuredData(page));
+  }, [pathname, ready]);
 }

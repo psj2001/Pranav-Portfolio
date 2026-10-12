@@ -18,13 +18,16 @@ import {
   publicProjects,
   training,
 } from './siteContent';
-import type { BlogTrack } from '../types';
+import type { BlogBlock, BlogTrack } from '../types';
 
 export interface PageMeta {
   path: string;
   title: string;
   description: string;
   noscript: string;
+  date?: string;
+  kind?: 'article';
+  robots?: 'noindex';
 }
 
 const pages: Record<'home' | 'flutter' | 'fullstack' | 'marketing' | 'blog' | 'software' | 'marketingBlog', PageMeta> = {
@@ -46,7 +49,7 @@ const pages: Record<'home' | 'flutter' | 'fullstack' | 'marketing' | 'blog' | 's
     path: '/full-stack-developer',
     title: 'Pranav P S | Full-stack web developer in Dubai',
     description:
-      'Websites, dashboards, and APIs by Pranav P S in Dubai, including React, Node.js, and CRM Falcon Force.',
+      'Websites, dashboards, and APIs by Pranav P S in Dubai, including Tripzza, Falcon Force Academy, and CRM Falcon Force.',
     noscript: '',
   },
   marketing: {
@@ -83,15 +86,16 @@ function homeNoscript() {
   const work = publicProjects()
     .map((project) => `${project.title} (${productTypeLabel(project.productType)}): ${project.summary}`)
     .join(' ');
-  return `${profile.name} is based in ${profile.location}. ${profile.availability}. He builds mobile apps and websites and works on digital marketing tasks. ${jobs} Projects: ${work} Education: ${education.credential}, ${education.school}, ${education.period}. Email: ${profile.email}.`;
+  const study = education.map((item) => `${item.credential}, ${item.school}, ${item.period}`).join('. ');
+  return `${profile.name} is based in ${profile.location}. ${profile.availability}. He builds mobile apps and websites and works on digital marketing tasks. ${jobs} Projects: ${work} Education: ${study}. Email: ${profile.email}.`;
 }
 
 pages.home.noscript = homeNoscript();
 pages.flutter.noscript = `${profile.name}, Flutter developer in ${profile.location}. ${employmentSummary().label} of confirmed employment. ${employmentSummary().detail} ${publicExperiences()
   .map((job) => `${job.role} at ${job.company}, ${job.location}, ${formatPeriod(job)}. ${[...job.bullets, ...job.related].join(' ')}`)
   .join(' ')} Training: ${training.map((item) => `${item.course} at ${item.provider}, ${item.location}, ${formatPeriod(item)}.`).join(' ')}`;
-pages.fullstack.noscript = `${profile.name}, full-stack developer in ${profile.location}. Websites, dashboards, and APIs, including CRM Falcon Force with React, Node.js, Express, and MongoDB, and the ChooseMy Fresh website.`;
-pages.marketing.noscript = `${profile.name} works on social content and websites in ${profile.location}. For ChooseMy Fresh, he created the website, managed its social media platforms, and worked on its website SEO. Paid advertising is not described on this page.`;
+pages.fullstack.noscript = `${profile.name}, full-stack developer in ${profile.location}. Websites, dashboards, and APIs, including the Tripzza website, the Falcon Force Academy website, CRM Falcon Force with React, Node.js, Express, and MongoDB, and the ChooseMy Fresh website.`;
+pages.marketing.noscript = `${profile.name} works on social content, SEO, and ads in ${profile.location}. For ChooseMy Fresh, he created the website, managed its social media platforms, and worked on its website SEO. Skills include Meta Ads, Google Ads, and WhatsApp automation.`;
 
 export function canonicalUrl(path: string) {
   if (path === '/') return `${SITE_URL}/`;
@@ -110,12 +114,20 @@ export function indexablePages(): PageMeta[] {
       path: `${BLOG_TRACKS[track].path}/${post.slug}`,
       title: `${post.title} | Pranav P S`,
       description: post.excerpt,
-      noscript: [post.title, post.excerpt, ...post.body.map((block) => (block.type === 'list' ? block.items.join(' ') : block.text))].join(
+      date: post.date,
+      kind: 'article' as const,
+      noscript: [post.title, post.excerpt, ...post.body.map(blockPlainText)].join(
         ' ',
       ),
     })),
   );
   return [pages.home, pages.flutter, pages.fullstack, pages.marketing, pages.blog, pages.software, pages.marketingBlog, ...caseStudies, ...articles];
+}
+
+function blockPlainText(block: BlogBlock) {
+  if (block.type === 'list') return block.items.join(' ');
+  if (block.type === 'image') return block.alt;
+  return block.text;
 }
 
 function caseStudyText(id: string) {
@@ -145,6 +157,7 @@ export function pageMetaForPath(pathname: string): PageMeta {
       title: 'Project not found | Pranav P S',
       description: 'This project is not published on the portfolio.',
       noscript: 'This project is not published.',
+      robots: 'noindex',
     };
   }
   const article = path.split('/').filter(Boolean);
@@ -156,14 +169,26 @@ export function pageMetaForPath(pathname: string): PageMeta {
         title: 'Note not found | Pranav P S',
         description: 'This note is not on the site.',
         noscript: 'This note is not on the site.',
+        robots: 'noindex',
       };
     }
+    return {
+      path,
+      title: `${post.title} | Pranav P S`,
+      description: post.excerpt,
+      date: post.date,
+      kind: 'article',
+      noscript: [post.title, post.excerpt, ...post.body.map(blockPlainText)].join(
+        ' ',
+      ),
+    };
   }
   return {
     path,
     title: 'Page not found | Pranav P S',
     description: 'This page is not on the portfolio of Pranav P S.',
     noscript: 'This page is not on the portfolio.',
+    robots: 'noindex',
   };
 }
 
@@ -175,11 +200,16 @@ function escapeHtml(value: string) {
     .replace(/"/g, '&quot;');
 }
 
+const shareImage = `${SITE_URL}/og-portrait.jpg`;
+
 export function personSchema() {
   return {
     '@context': 'https://schema.org',
     '@type': 'Person',
     name: profile.name,
+    jobTitle: 'Developer and digital marketer',
+    email: profile.email,
+    image: shareImage,
     url: `${SITE_URL}/`,
     address: {
       '@type': 'PostalAddress',
@@ -189,10 +219,27 @@ export function personSchema() {
   };
 }
 
-export function renderHead(page: PageMeta) {
+export function structuredData(page: PageMeta) {
   const canonical = canonicalUrl(page.path);
-  const image = `${SITE_URL}/og-portrait.jpg`;
-  const structured = page.path === '/' ? personSchema() : {
+  if (page.path === '/') return personSchema();
+  if (page.kind === 'article') {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: page.title.replace(/ \| Pranav P S$/, ''),
+      description: page.description,
+      datePublished: page.date,
+      image: shareImage,
+      url: canonical,
+      author: {
+        '@type': 'Person',
+        name: profile.name,
+        url: `${SITE_URL}/`,
+      },
+      mainEntityOfPage: canonical,
+    };
+  }
+  return {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
     name: page.title,
@@ -204,23 +251,28 @@ export function renderHead(page: PageMeta) {
       url: `${SITE_URL}/`,
     },
   };
-  const json = JSON.stringify(structured).replace(/</g, '\\u003c');
+}
+
+export function renderHead(page: PageMeta) {
+  const canonical = canonicalUrl(page.path);
+  const json = JSON.stringify(structuredData(page)).replace(/</g, '\\u003c');
+  const robots = page.robots === 'noindex' ? `\n    <meta name="robots" content="noindex" />` : '';
   return `
     <title>${escapeHtml(page.title)}</title>
-    <meta name="description" content="${escapeHtml(page.description)}" />
+    <meta name="description" content="${escapeHtml(page.description)}" />${robots}
     <link rel="canonical" href="${canonical}" />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content="${page.kind === 'article' ? 'article' : 'website'}" />
     <meta property="og:site_name" content="${escapeHtml(profile.name)}" />
     <meta property="og:title" content="${escapeHtml(page.title)}" />
     <meta property="og:description" content="${escapeHtml(page.description)}" />
     <meta property="og:url" content="${canonical}" />
-    <meta property="og:image" content="${image}" />
+    <meta property="og:image" content="${shareImage}" />
     <meta property="og:image:width" content="1088" />
     <meta property="og:image:height" content="1445" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escapeHtml(page.title)}" />
     <meta name="twitter:description" content="${escapeHtml(page.description)}" />
-    <meta name="twitter:image" content="${image}" />
+    <meta name="twitter:image" content="${shareImage}" />
     <script type="application/ld+json" id="page-jsonld">${json}</script>`;
 }
 
@@ -230,7 +282,10 @@ export function renderNoscript(page: PageMeta) {
 
 export function renderSitemap() {
   const urls = indexablePages()
-    .map((page) => `  <url><loc>${canonicalUrl(page.path)}</loc></url>`)
+    .map((page) => {
+      const lastmod = page.date ? `\n    <lastmod>${page.date}</lastmod>` : '';
+      return `  <url>\n    <loc>${canonicalUrl(page.path)}</loc>${lastmod}\n  </url>`;
+    })
     .join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
 }

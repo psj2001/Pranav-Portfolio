@@ -2,21 +2,13 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig} from 'vite';
-import {writeRouteFiles} from './scripts/writeRouteFiles';
 
-export default defineConfig(() => {
+export default defineConfig(({isSsrBuild}) => {
   return {
-    plugins: [
-      react(),
-      tailwindcss(),
-      {
-        name: 'route-html',
-        apply: 'build',
-        closeBundle() {
-          writeRouteFiles(path.resolve(__dirname, 'dist'));
-        },
-      },
-    ],
+    plugins: [react(), ...(isSsrBuild ? [] : [tailwindcss()])],
+    ssr: {
+      noExternal: isSsrBuild ? true : undefined,
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

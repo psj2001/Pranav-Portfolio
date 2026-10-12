@@ -7,7 +7,9 @@ import flutterIcon from '../portfolio-hero-assets/flutter-icon.svg';
 import fullStackIcon from '../portfolio-hero-assets/full-stack-icon.svg';
 import marketingIcon from '../portfolio-hero-assets/digital-marketing-icon.svg';
 import { profile } from '../data/siteContent';
-import { ROLE_ROUTES, navigate } from '../routes';
+import { ROLE_ROUTES } from '../routes';
+import { entranceInitial } from './entrance';
+import { followRoute } from './RouteLink';
 import '../portfolio-hero-assets/design-tokens.css';
 
 interface HeroProps {
@@ -101,7 +103,7 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
           <div className="max-w-xl">
             <motion.p
               className="hero-reveal text-[11px] font-semibold uppercase tracking-[0.22em] text-[#a7b5c5] sm:text-xs"
-              initial={reduced ? false : { opacity: 0, y: 18 }}
+              initial={entranceInitial(reduced, { opacity: 0, y: 18 })}
               animate={{ opacity: 1, y: 0 }}
               transition={rise}
             >
@@ -116,7 +118,7 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
 
             <motion.h1
               className="hero-reveal mt-5 font-sans text-[clamp(2.7rem,4.5vw,4.35rem)] font-extrabold leading-[0.96] tracking-[-0.035em] text-white"
-              initial={reduced ? false : { opacity: 0, y: 18 }}
+              initial={entranceInitial(reduced, { opacity: 0, y: 18 })}
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...rise, delay: 0.08 }}
             >
@@ -157,7 +159,7 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
 
             <motion.p
               className="hero-reveal mt-6 max-w-md text-base leading-relaxed text-[#a7b5c5] sm:text-[17px]"
-              initial={reduced ? false : { opacity: 0, y: 16 }}
+              initial={entranceInitial(reduced, { opacity: 0, y: 16 })}
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...rise, delay: 0.16 }}
             >
@@ -172,7 +174,7 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
 
             <motion.div
               className="hero-reveal mt-8 flex flex-col gap-3 sm:flex-row sm:items-center"
-              initial={reduced ? false : { opacity: 0, y: 16 }}
+              initial={entranceInitial(reduced, { opacity: 0, y: 16 })}
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...rise, delay: 0.32 }}
             >
@@ -224,7 +226,7 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
 
           <motion.div
             className="hero-reveal relative mx-auto w-full max-w-[520px] lg:mx-0 lg:ml-auto lg:max-w-[500px] lg:mr-16"
-            initial={reduced ? false : { opacity: 0, y: 20 }}
+            initial={entranceInitial(reduced, { opacity: 0, y: 20 })}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.65, delay: 0.12, ease: 'easeOut' }}
           >
@@ -272,7 +274,7 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
         <div className="mx-auto flex max-w-7xl flex-col px-4 py-3 lg:flex-row lg:items-stretch lg:px-6 lg:py-0">
           <motion.div
             className="hero-reveal flex items-center px-2 py-3 lg:w-[230px] lg:shrink-0 lg:border-r lg:border-[#1a3038] lg:pr-6"
-            initial={reduced ? false : { opacity: 0, y: 16 }}
+            initial={entranceInitial(reduced, { opacity: 0, y: 16 })}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...rise, delay: 0.4 }}
           >
@@ -283,14 +285,14 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
 
           <div className="grid flex-1 sm:grid-cols-3">
             {services.map((service, index) => (
-              <motion.button
+              <motion.a
                 key={service.role}
-                type="button"
-                onClick={() => navigate(service.path)}
+                href={service.path}
+                onClick={(event) => followRoute(event, service.path)}
                 className={`hero-reveal group flex items-center gap-3 px-3 py-3 text-left transition hover:bg-white/[0.03] sm:px-5 ${
                   index > 0 ? 'sm:border-l sm:border-[#1a3038]' : ''
                 }`}
-                initial={reduced ? false : { opacity: 0, y: 16 }}
+                initial={entranceInitial(reduced, { opacity: 0, y: 16 })}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...rise, delay: 0.46 + index * 0.08 }}
               >
@@ -313,7 +315,7 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
                     flutter ? 'group-hover:text-[#027DFD]' : fullstack ? 'group-hover:text-[#FF7A00]' : marketing ? 'group-hover:text-[#FFD000]' : 'group-hover:text-[#00e5e5]'
                   }`}
                 />
-              </motion.button>
+              </motion.a>
             ))}
           </div>
         </div>

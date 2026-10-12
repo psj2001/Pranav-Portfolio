@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
-import { blogDestination, blogFromPath, caseStudyFromPath, goHome, navigate, roleFromPath, scrollBehavior, usePathname } from '../routes';
+import { blogDestination, blogFromPath, caseStudyFromPath, goHome, roleFromPath, scrollBehavior, usePathname } from '../routes';
+import RouteLink from './RouteLink';
 
 interface NavbarProps {
   activeSection: string;
@@ -55,13 +56,15 @@ export default function Navbar({ activeSection, flutter = false, fullstack = fal
   const activeText = flutter ? 'text-[#027DFD]' : fullstack ? 'text-[#FF7A00]' : marketing ? 'text-[#FFD000]' : 'text-[#00e5e5]';
   const activeBar = flutter ? 'bg-[#027DFD]' : fullstack ? 'bg-[#FF7A00]' : marketing ? 'bg-[#FFD000]' : 'bg-[#00e5e5]';
 
+  const routeHref = (id: string) => {
+    if (id === 'home') return '/';
+    if (id === 'blog') return blogDestination(pathname);
+    return null;
+  };
+
   const handleScrollToSegment = (id: string) => {
     setMobileMenuOpen(false);
     if (onBlog || onCase) {
-      if (id === 'blog') {
-        navigate(blogDestination(pathname));
-        return;
-      }
       goHome(id);
       return;
     }
@@ -88,14 +91,15 @@ export default function Navbar({ activeSection, flutter = false, fullstack = fal
     }
   };
 
-  const handleBrandClick = () => {
-    setMobileMenuOpen(false);
-    if (onRolePage || onBlog || onCase) {
-      goHome();
-      return;
-    }
-    window.scrollTo({ top: 0, behavior: scrollBehavior() });
-  };
+  const itemClass = (id: string) =>
+    `relative min-h-11 cursor-pointer py-2 transition-colors duration-150 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white ${
+      (id === 'blog' ? onBlog : !onBlog && activeSection === id) ? activeText : 'text-white/80'
+    }`;
+
+  const mobileItemClass = (id: string) =>
+    `min-h-11 cursor-pointer border-b border-white/5 p-2 text-left text-[15px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+      (id === 'blog' ? onBlog : !onBlog && activeSection === id) ? activeText : 'text-white/80'
+    }`;
 
 
 
@@ -110,31 +114,42 @@ export default function Navbar({ activeSection, flutter = false, fullstack = fal
     >
       <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
         {/* Brand Name */}
-        <button
-          type="button"
-          onClick={handleBrandClick}
+        <RouteLink
+          href="/"
+          onClick={() => setMobileMenuOpen(false)}
           className="flex cursor-pointer items-center gap-1.5 pr-4 font-sans text-[1.15rem] font-bold tracking-tight text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
         >
           <span>Pranav P S.</span>
           <span className={`h-1.5 w-1.5 rounded-full ${flutter ? 'bg-[#027DFD]' : fullstack ? 'bg-[#FF7A00]' : marketing ? 'bg-[#FFD000]' : 'bg-[#00e5e5]'}`}></span>
-        </button>
+        </RouteLink>
 
         {/* Desktop Nav Items */}
         <div className="hidden md:flex items-center gap-5 font-sans text-[15px] font-medium lg:gap-7">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              className={`relative min-h-11 cursor-pointer py-2 transition-colors duration-150 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white ${
-                (item.id === 'blog' ? onBlog : !onBlog && activeSection === item.id) ? activeText : 'text-white/80'
-              }`}
-              onClick={() => handleScrollToSegment(item.id)}
-            >
-              {item.label}
-              {(item.id === 'blog' ? onBlog : !onBlog && activeSection === item.id) && (
-                <span className={`absolute bottom-0 left-0 right-0 h-0.5 rounded-full ${activeBar}`} />
-              )}
-            </button>
-          ))}
+          {navItems.map((item) => {
+            const href = routeHref(item.id);
+            const activeMark = (item.id === 'blog' ? onBlog : !onBlog && activeSection === item.id) ? (
+              <span className={`absolute bottom-0 left-0 right-0 h-0.5 rounded-full ${activeBar}`} />
+            ) : null;
+            if (href) {
+              return (
+                <RouteLink key={item.id} href={href} className={itemClass(item.id)} onClick={() => setMobileMenuOpen(false)}>
+                  {item.label}
+                  {activeMark}
+                </RouteLink>
+              );
+            }
+            return (
+              <button
+                key={item.id}
+                type="button"
+                className={itemClass(item.id)}
+                onClick={() => handleScrollToSegment(item.id)}
+              >
+                {item.label}
+                {activeMark}
+              </button>
+            );
+          })}
         </div>
 
         {/* Mobile menu trigger */}
@@ -155,17 +170,26 @@ export default function Navbar({ activeSection, flutter = false, fullstack = fal
       {/* Mobile Drawer menu */}
       {mobileMenuOpen && (
         <div id="mobile-nav-panel" className="absolute top-full left-0 right-0 bg-[#030304]/95 backdrop-blur-xl border-b border-white/5 p-5 flex flex-col gap-4 shadow-xl z-50 md:hidden animate-fade-in">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => handleScrollToSegment(item.id)}
-              className={`min-h-11 cursor-pointer border-b border-white/5 p-2 text-left text-[15px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
-                (item.id === 'blog' ? onBlog : !onBlog && activeSection === item.id) ? activeText : 'text-white/80'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
+          {navItems.map((item) => {
+            const href = routeHref(item.id);
+            if (href) {
+              return (
+                <RouteLink key={item.id} href={href} className={mobileItemClass(item.id)} onClick={() => setMobileMenuOpen(false)}>
+                  {item.label}
+                </RouteLink>
+              );
+            }
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleScrollToSegment(item.id)}
+                className={mobileItemClass(item.id)}
+              >
+                {item.label}
+              </button>
+            );
+          })}
         </div>
       )}
     </nav>

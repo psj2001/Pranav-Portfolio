@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef } from 'react';
 import { ArrowRight, AppWindow, Megaphone, Smartphone, Users } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { createTimeline, svg } from 'animejs';
+import { shouldPlayEntrance } from './entrance';
 import type { Timeline } from 'animejs';
 
 interface WhatIDoProps {
@@ -39,8 +40,8 @@ const services: Service[] = [
   {
     number: '03',
     title: 'Dashboards',
-    description: 'Tools for clients, leads, and sales workflows.',
-    tags: ['Clients', 'Leads', 'Sales workflows'],
+    description: 'The CRM for Falcon Force Academy: clients, staff, salaries, expenses, income, and payment orders.',
+    tags: ['Clients', 'Staff', 'Expenses'],
     icon: Users,
     project: { filter: 'dashboard', anchor: 'project-crm-falcon' },
   },
@@ -181,7 +182,7 @@ export default function WhatIDo({ onNavigate }: WhatIDoProps) {
     if (!section || !board) return;
 
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let reduced = media.matches;
+    let reduced = media.matches || !shouldPlayEntrance();
     let started = false;
     let finished = false;
     let timeline: Timeline | null = null;

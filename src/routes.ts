@@ -117,8 +117,10 @@ export function goHome(section?: string) {
   publishPath();
 }
 
-export function usePathname() {
-  const [pathname, setPathname] = useState(() => normalizePath(window.location.pathname));
+export function usePathname(initialPath = '/') {
+  const [pathname, setPathname] = useState(() =>
+    normalizePath(typeof window === 'undefined' ? initialPath : window.location.pathname),
+  );
 
   useEffect(() => {
     const sync = () => setPathname(normalizePath(window.location.pathname));

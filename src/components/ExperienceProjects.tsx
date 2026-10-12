@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
+import { entranceInitial } from './entrance';
 import ProjectCard, { accentForProduct, type ProjectAccent } from './ProjectCard';
 import { projectMatchesSurface, publicProjects, type ContentRole } from '../data/siteContent';
 import type { ProductType, ProjectItem } from '../types';
@@ -71,7 +72,7 @@ export default function ExperienceProjects({
       <div className="mx-auto max-w-6xl px-6 py-16 lg:px-8 lg:py-20">
         <motion.header
           className="max-w-3xl"
-          initial={reduced ? false : { opacity: 0, y: 18 }}
+          initial={entranceInitial(reduced, { opacity: 0, y: 18 })}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '0px 0px -8% 0px' }}
           transition={{ duration: 0.5 }}

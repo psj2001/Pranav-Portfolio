@@ -13,6 +13,7 @@ import {
   Workflow,
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { entranceInitial } from './entrance';
 import type { SimpleIcon } from 'simple-icons';
 import {
   siAndroid,
@@ -190,7 +191,7 @@ export default function SkillsArsenal({ surface = 'home', categoryIds, flutter =
       <div className="relative mx-auto max-w-6xl px-6 py-20 lg:px-8 lg:py-24">
         <motion.header
           className="skills-reveal max-w-3xl"
-          initial={reduced ? false : { opacity: 0, y: 20 }}
+          initial={entranceInitial(reduced, { opacity: 0, y: 20 })}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '0px 0px -8% 0px' }}
           transition={{ duration: 0.55, ease: easeOut }}
@@ -206,8 +207,8 @@ export default function SkillsArsenal({ surface = 'home', categoryIds, flutter =
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#c5d2de] sm:text-lg">
             {marketing
-              ? 'Social content and the website skills that support landing pages, tracking, and site updates.'
-              : 'The skills used on the work described on this page.'}
+              ? 'Social content, SEO, ads, and the website skills that support landing pages, tracking, and site updates.'
+              : 'Skills and tools I use for apps, websites, and marketing.'}
           </p>
         </motion.header>
 
@@ -225,7 +226,7 @@ export default function SkillsArsenal({ surface = 'home', categoryIds, flutter =
                       ? 'border-[#FFD000]/35 shadow-[0_0_22px_rgba(255,208,0,0.08)] hover:border-[#FFD000] hover:shadow-[0_0_28px_rgba(255,208,0,0.2)]'
                       : 'border-[#00e5e5]/35 shadow-[0_0_22px_rgba(0,229,229,0.06)] hover:border-[#00e5e5] hover:shadow-[0_0_28px_rgba(0,229,229,0.16)]'
               } ${category.wide ? 'md:col-span-2 xl:col-span-3' : ''}`}
-              initial={reduced ? false : { opacity: 0, y: 18 }}
+              initial={entranceInitial(reduced, { opacity: 0, y: 18 })}
               whileInView={{ opacity: 1, y: 0 }}
               whileHover={reduced ? undefined : { y: -4 }}
               viewport={{ once: true, margin: '0px 0px -8% 0px' }}
@@ -242,7 +243,7 @@ export default function SkillsArsenal({ surface = 'home', categoryIds, flutter =
                     className={`skills-reveal flex w-[6.5rem] max-w-full flex-col items-center gap-2 rounded-xl border border-transparent px-1 py-1 text-center transition-[border-color,background-color] duration-300 hover:bg-[#0c1c24] ${
                       flutter ? 'hover:border-[#027DFD]/55' : fullstack ? 'hover:border-[#FF7A00]/55' : marketing ? 'hover:border-[#FFD000]/55' : 'hover:border-[#00e5e5]/55'
                     }`}
-                    initial={reduced ? false : { opacity: 0, y: 10 }}
+                    initial={entranceInitial(reduced, { opacity: 0, y: 10 })}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: '0px 0px -6% 0px' }}
                     transition={{

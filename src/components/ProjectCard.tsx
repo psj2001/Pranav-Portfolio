@@ -1,4 +1,3 @@
-import { navigate } from '../routes';
 import {
   contributionKindLabel,
   engagementLabel,
@@ -6,6 +5,7 @@ import {
   projectPath,
 } from '../data/siteContent';
 import type { ProjectItem } from '../types';
+import RouteLink from './RouteLink';
 
 const accents = {
   home: {
@@ -99,13 +99,12 @@ export default function ProjectCard({ project, accent = 'home' }: { project: Pro
           </ul>
         ) : null}
         <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <button
-            type="button"
-            onClick={() => navigate(projectPath(project.id))}
+          <RouteLink
+            href={projectPath(project.id)}
             className={`inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${tone.button}`}
           >
             View case study
-          </button>
+          </RouteLink>
           {project.links.map((link) => (
             <a
               key={link.href}

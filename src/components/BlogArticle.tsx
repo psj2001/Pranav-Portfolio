@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowLeft } from 'lucide-react';
 import { findPost, formatBlogDate } from '../data/blogPosts';
-import { BLOG_TRACKS, navigate } from '../routes';
+import { BLOG_TRACKS } from '../routes';
+import { usePortfolioReady } from './PortfolioLoader';
+import RouteLink from './RouteLink';
+import { entranceInitial } from './entrance';
 import type { BlogTrack } from '../types';
 
 function usePrefersReducedMotion() {
@@ -21,6 +24,7 @@ const accent: Record<BlogTrack, { text: string; chip: string }> = {
 
 export default function BlogArticle({ track, slug }: { track: BlogTrack; slug: string }) {
   const reduced = usePrefersReducedMotion();
+  const ready = usePortfolioReady();
   const post = findPost(track, slug);
   const tone = accent[track];
   const indexPath = BLOG_TRACKS[track].path;
@@ -29,18 +33,17 @@ export default function BlogArticle({ track, slug }: { track: BlogTrack; slug: s
     <article className="relative z-10 scroll-mt-24 pt-28 pb-24 sm:pt-32">
       <div className="mx-auto max-w-3xl px-6 lg:px-8">
         <motion.div
-          initial={reduced ? false : { opacity: 0, y: 20 }}
+          initial={entranceInitial(reduced, { opacity: 0, y: 20 })}
           animate={{ opacity: 1, y: 0 }}
           transition={rise}
         >
-          <button
-            type="button"
-            onClick={() => navigate(indexPath)}
+          <RouteLink
+            href={indexPath}
             className={`inline-flex cursor-pointer items-center gap-2 text-sm font-semibold ${tone.text}`}
           >
             <ArrowLeft size={16} />
             {BLOG_TRACKS[track].title} blog
-          </button>
+          </RouteLink>
 
           {post ? (
             <>
@@ -75,11 +78,26 @@ export default function BlogArticle({ track, slug }: { track: BlogTrack; slug: s
                       </ul>
                     );
                   }
+                  if (block.type === 'image') {
+                    return (
+                      <figure key={index} className="overflow-hidden rounded-2xl border border-white/10 bg-[#07141c]">
+                        <img
+                          src={block.src}
+                          alt={block.alt}
+                          width={block.width}
+                          height={block.height}
+                          loading="lazy"
+                          decoding="async"
+                          className="h-auto w-full"
+                        />
+                      </figure>
+                    );
+                  }
                   return <p key={index}>{block.text}</p>;
                 })}
               </div>
             </>
-          ) : (
+          ) : ready ? (
             <>
               <h1 className="mt-8 text-[2rem] font-extrabold leading-[1.08] tracking-[-0.03em] text-white sm:text-5xl">
                 This note is not on the {BLOG_TRACKS[track].title.toLowerCase()} blog.
@@ -88,6 +106,8 @@ export default function BlogArticle({ track, slug }: { track: BlogTrack; slug: s
                 The link does not match a post on this track.
               </p>
             </>
+          ) : (
+            <p className="mt-8 text-base leading-relaxed text-[#a7b5c5]">Loading this note.</p>
           )}
         </motion.div>
       </div>

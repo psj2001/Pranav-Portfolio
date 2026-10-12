@@ -115,7 +115,8 @@ export type BlogTrack = 'software' | 'marketing';
 export type BlogBlock =
   | { type: 'paragraph'; text: string }
   | { type: 'heading'; text: string }
-  | { type: 'list'; items: string[] };
+  | { type: 'list'; items: string[] }
+  | { type: 'image'; src: string; alt: string; width: number; height: number };
 
 export interface BlogPost {
   track: BlogTrack;

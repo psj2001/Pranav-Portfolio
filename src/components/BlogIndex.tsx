@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
 import { formatBlogDate, postsForTrack } from '../data/blogPosts';
-import { BLOG_HUB_PATH, BLOG_TRACKS, navigate } from '../routes';
+import { BLOG_HUB_PATH, BLOG_TRACKS } from '../routes';
+import RouteLink, { followRoute } from './RouteLink';
+import { entranceInitial } from './entrance';
 import type { BlogTrack } from '../types';
 
 function usePrefersReducedMotion() {
@@ -51,7 +53,7 @@ export function BlogHub() {
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <motion.header
           className="max-w-3xl"
-          initial={reduced ? false : { opacity: 0, y: 20 }}
+          initial={entranceInitial(reduced, { opacity: 0, y: 20 })}
           animate={{ opacity: 1, y: 0 }}
           transition={rise}
         >
@@ -68,12 +70,12 @@ export function BlogHub() {
           {(Object.keys(tracks) as BlogTrack[]).map((track, index) => {
             const content = tracks[track];
             return (
-              <motion.button
+              <motion.a
                 key={track}
-                type="button"
-                onClick={() => navigate(BLOG_TRACKS[track].path)}
+                href={BLOG_TRACKS[track].path}
+                onClick={(event) => followRoute(event, BLOG_TRACKS[track].path)}
                 className={`group cursor-pointer rounded-2xl border bg-[#07141c] p-7 text-left transition-colors hover:bg-[#0b1c26] ${content.accentBorder}`}
-                initial={reduced ? false : { opacity: 0, y: 18 }}
+                initial={entranceInitial(reduced, { opacity: 0, y: 18 })}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...rise, delay: reduced ? 0 : 0.08 * index }}
               >
@@ -88,7 +90,7 @@ export function BlogHub() {
                   Open {BLOG_TRACKS[track].title.toLowerCase()}
                   <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
                 </span>
-              </motion.button>
+              </motion.a>
             );
           })}
         </div>
@@ -107,7 +109,7 @@ export function BlogTrackIndex({ track }: { track: BlogTrack }) {
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         <motion.header
           className="max-w-3xl"
-          initial={reduced ? false : { opacity: 0, y: 20 }}
+          initial={entranceInitial(reduced, { opacity: 0, y: 20 })}
           animate={{ opacity: 1, y: 0 }}
           transition={rise}
         >
@@ -118,46 +120,57 @@ export function BlogTrackIndex({ track }: { track: BlogTrack }) {
             {BLOG_TRACKS[track].title} <span className={content.accentText}>blog.</span>
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#a7b5c5] sm:text-lg">{content.summary}</p>
-          <button
-            type="button"
-            onClick={() => navigate(BLOG_HUB_PATH)}
-            className="mt-5 cursor-pointer text-sm font-semibold text-white/70 hover:text-white"
-          >
+          <RouteLink href={BLOG_HUB_PATH} className="mt-5 inline-flex cursor-pointer text-sm font-semibold text-white/70 hover:text-white">
             Both blogs
-          </button>
+          </RouteLink>
         </motion.header>
 
         <ul className="mt-12 flex flex-col gap-4">
-          {posts.map((post, index) => (
+          {posts.map((post, index) => {
+            const image = post.body.find((block) => block.type === 'image');
+            return (
             <motion.li
               key={post.slug}
-              initial={reduced ? false : { opacity: 0, y: 18 }}
+              initial={entranceInitial(reduced, { opacity: 0, y: 18 })}
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...rise, delay: reduced ? 0 : Math.min(index * 0.06, 0.18) }}
             >
-              <button
-                type="button"
-                onClick={() => navigate(`${BLOG_TRACKS[track].path}/${post.slug}`)}
-                className={`w-full cursor-pointer rounded-2xl border bg-[#07141c] p-6 text-left transition-colors hover:bg-[#0b1c26] sm:p-7 ${content.accentBorder}`}
+              <RouteLink
+                href={`${BLOG_TRACKS[track].path}/${post.slug}`}
+                className={`block w-full cursor-pointer overflow-hidden rounded-2xl border bg-[#07141c] text-left transition-colors hover:bg-[#0b1c26] ${content.accentBorder}`}
               >
-                <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#a7b5c5]">
-                  {formatBlogDate(post.date)} · {post.readingMinutes} min read
-                </p>
-                <h2 className="mt-3 text-xl font-extrabold tracking-[-0.03em] text-white sm:text-2xl">{post.title}</h2>
-                <p className="mt-3 max-w-3xl text-base leading-relaxed text-[#a7b5c5]">{post.excerpt}</p>
-                <ul className="mt-4 flex flex-wrap gap-2">
-                  {post.tags.map((tag) => (
-                    <li
-                      key={tag}
-                      className={`rounded-full border bg-black/30 px-3 py-1 text-xs font-semibold ${content.chip}`}
-                    >
-                      {tag}
-                    </li>
-                  ))}
-                </ul>
-              </button>
+                {image?.type === 'image' ? (
+                  <img
+                    src={image.src}
+                    alt=""
+                    width={image.width}
+                    height={image.height}
+                    loading="lazy"
+                    decoding="async"
+                    className="aspect-video w-full object-cover"
+                  />
+                ) : null}
+                <div className="p-6 sm:p-7">
+                  <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#a7b5c5]">
+                    {formatBlogDate(post.date)} · {post.readingMinutes} min read
+                  </p>
+                  <h2 className="mt-3 text-xl font-extrabold tracking-[-0.03em] text-white sm:text-2xl">{post.title}</h2>
+                  <p className="mt-3 max-w-3xl text-base leading-relaxed text-[#a7b5c5]">{post.excerpt}</p>
+                  <ul className="mt-4 flex flex-wrap gap-2">
+                    {post.tags.map((tag) => (
+                      <li
+                        key={tag}
+                        className={`rounded-full border bg-black/30 px-3 py-1 text-xs font-semibold ${content.chip}`}
+                      >
+                        {tag}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </RouteLink>
             </motion.li>
-          ))}
+            );
+          })}
         </ul>
       </div>
     </section>

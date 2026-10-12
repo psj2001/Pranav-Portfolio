@@ -5,8 +5,10 @@ import type {
   MonthPoint,
   ProductType,
   ProjectItem,
+  ProjectShot,
   SkillCategory,
   SkillItem,
+  SkillOutline,
   TrainingItem,
 } from '../types';
 
@@ -18,7 +20,7 @@ export const profile = {
   name: 'Pranav P S',
   location: 'Dubai, UAE',
   availability: 'Open to roles in the UAE',
-  email: 'contact@pranavps.com',
+  email: 'pranavputhoor91@gmail.com',
   url: SITE_URL,
   cvs: {
     flutter: null as string | null,
@@ -27,11 +29,20 @@ export const profile = {
   },
 };
 
-export const education = {
-  credential: 'Bachelor of Commerce (B.Com)',
-  school: 'Calicut University',
-  period: '2019 – 2022',
-};
+export const education = [
+  {
+    credential: 'Bachelor of Commerce (B.Com)',
+    school: 'Calicut University',
+    period: '2019 – 2022',
+    detail: 'Business, finance, accounting, and management.',
+  },
+  {
+    credential: 'BCA, Computer Software Engineering',
+    school: 'Rabindranath Tagore University',
+    period: 'June 2021 – September 2024',
+    detail: 'Computer software engineering.',
+  },
+];
 
 /** Courses and certificates. Keep these out of `experiences`. */
 export const training: TrainingItem[] = [
@@ -47,7 +58,7 @@ export const training: TrainingItem[] = [
 
 /**
  * Employment only, newest first.
- * Dates are inclusive calendar months. Leave `end` unset until the end date is confirmed.
+ * Dates are inclusive calendar months. Leave `end` unset while the role is current. The page shows Present.
  * Do not add training, and do not add a technology the role record does not name.
  */
 const experiences: ExperienceItem[] = [
@@ -62,6 +73,11 @@ const experiences: ExperienceItem[] = [
       'Worked on frontend interfaces, backend functionality, databases, and API integrations.',
       'Tested applications, resolved technical issues, and supported deployments, updates, and maintenance.',
       'Collaborated with management, marketing, and operations teams on business requirements.',
+      'Managed the mobile development team.',
+      'Made architecture decisions.',
+      'Planned sprints.',
+      'Reviewed code.',
+      'Defined the technical roadmap.',
     ],
     related: [],
     technologies: [],
@@ -107,28 +123,19 @@ const experiences: ExperienceItem[] = [
     location: 'Thrissur, India',
     start: { year: 2022, month: 3 },
     end: { year: 2023, month: 3 },
-    bullets: [],
+    bullets: [
+      'Worked on a Flutter ecommerce application.',
+      'Used GetX and Provider.',
+    ],
     related: [],
-    technologies: [],
+    technologies: ['Flutter', 'GetX', 'Provider'],
     projectIds: [],
   },
 ];
 
-const projects: Array<ProjectItem & { status: 'public' | 'review' }> = [
-  {
-    status: 'public',
-    id: 'creova',
-    title: 'CREOVA',
-    summary: 'A platform that connects brands with creators and influencers.',
-    productType: 'mobile-app',
-    contributionKind: 'features',
-    contribution: 'Implemented core features in the Flutter app.',
-    technologies: ['Flutter', 'Clean Architecture'],
-    tasks: ['Implemented core features in the Flutter app.'],
-    completed: 'The app connects brands with creators and influencers.',
-    links: [],
-    featured: true,
-  },
+type StoredProject = ProjectItem & { status: 'public' | 'review' };
+
+const projects: StoredProject[] = [
   {
     status: 'public',
     id: 'proptelli',
@@ -196,17 +203,51 @@ const projects: Array<ProjectItem & { status: 'public' | 'review' }> = [
   },
   {
     status: 'public',
+    id: 'tripzza',
+    title: 'Tripzza',
+    summary: 'The website for Tripzza Holidays, a travel agency in Thrissur.',
+    productType: 'website',
+    contributionKind: 'built',
+    contribution: 'Built the Tripzza website.',
+    technologies: [],
+    tasks: ['Built the Tripzza website.'],
+    links: [{ label: 'Tripzza', href: 'https://tripzza.com/' }],
+    featured: true,
+    audiences: ['home', 'fullstack'],
+  },
+  {
+    status: 'public',
+    id: 'falcon-force',
+    title: 'Falcon Force Academy',
+    summary: 'The website for Falcon Force Academy, a martial arts and fitness school in Sharjah.',
+    productType: 'website',
+    contributionKind: 'built',
+    contribution: 'Built the Falcon Force Academy website.',
+    technologies: [],
+    tasks: ['Built the Falcon Force Academy website.'],
+    links: [{ label: 'Falcon Force Academy', href: 'https://falconforceacademy.com/' }],
+    featured: true,
+    audiences: ['home', 'fullstack'],
+  },
+  {
+    status: 'public',
     id: 'crm-falcon',
     title: 'CRM Falcon Force',
-    summary: 'A CRM for clients, leads, and sales workflows.',
+    summary: 'A CRM for Falcon Force Academy covering clients, staff, salaries, expenses, income, and payment orders.',
     productType: 'dashboard',
     contributionKind: 'built',
-    contribution: 'Developed the CRM for clients, leads, and sales workflows.',
+    contribution: 'Built the CRM for Falcon Force Academy.',
     technologies: ['React', 'Node.js', 'Express', 'MongoDB'],
-    tasks: ['Developed the CRM with React, Node.js, Express, and MongoDB.'],
-    completed: 'The CRM manages clients, leads, and sales workflows.',
+    tasks: [
+      'Add clients, staff, and salaries.',
+      'Record expenses and income.',
+      'Generate a PDF of income and expenses.',
+      'Track payment orders.',
+    ],
+    completed: 'The CRM keeps Falcon Force Academy’s clients, staff, salaries, expenses, income, and payment orders.',
     links: [],
     featured: true,
+    audiences: ['home', 'fullstack'],
   },
   {
     status: 'review',
@@ -352,12 +393,84 @@ const projects: Array<ProjectItem & { status: 'public' | 'review' }> = [
 
 const brand = (name: string, slug: string): SkillItem => ({ name, mark: { kind: 'brand', slug } });
 const mono = (name: string, letters: string): SkillItem => ({ name, mark: { kind: 'monogram', letters } });
+const outline = (name: string, icon: SkillOutline): SkillItem => ({
+  name,
+  mark: { kind: 'outline', icon },
+});
 const social: SkillItem = { name: 'Social media', mark: { kind: 'outline', icon: 'social' } };
 
 const codingTools: SkillItem[] = [
   brand('Cursor', 'cursor'),
   brand('Claude Code', 'claudecode'),
   mono('Codex', 'CX'),
+  mono('Google Antigravity', 'AG'),
+  mono('ChatGPT', 'GPT'),
+];
+
+const mobileSkills: SkillItem[] = [
+  brand('Flutter', 'flutter'),
+  brand('Dart', 'dart'),
+  brand('React Native', 'react'),
+  brand('Android', 'android'),
+  brand('iOS', 'ios'),
+];
+
+const frontendSkills: SkillItem[] = [
+  brand('HTML', 'html5'),
+  brand('CSS', 'css'),
+  brand('JavaScript', 'javascript'),
+  brand('React', 'react'),
+  brand('Tailwind CSS', 'tailwindcss'),
+  brand('WordPress', 'wordpress'),
+];
+
+const backendSkills: SkillItem[] = [
+  brand('Node.js', 'nodedotjs'),
+  brand('Express.js', 'express'),
+  outline('REST APIs', 'api'),
+  brand('Firebase', 'firebase'),
+  brand('MySQL', 'mysql'),
+  brand('MongoDB', 'mongodb'),
+];
+
+const aiSkills: SkillItem[] = [
+  outline('LLM integrations', 'llm'),
+  outline('RAG', 'rag'),
+  outline('Agentic AI', 'agent'),
+  brand('MCP', 'modelcontextprotocol'),
+];
+
+const marketingSkills: SkillItem[] = [
+  outline('SEO', 'seo'),
+  mono('AEO', 'AEO'),
+  mono('GEO', 'GEO'),
+  social,
+  brand('Meta Ads', 'meta'),
+  brand('Google Ads', 'googleads'),
+  brand('WhatsApp Automation', 'whatsapp'),
+];
+
+const analyticsSkills: SkillItem[] = [
+  brand('Semrush', 'semrush'),
+  brand('Google Analytics', 'googleanalytics'),
+  brand('Google Search Console', 'googlesearchconsole'),
+  brand('Google Tag Manager', 'googletagmanager'),
+];
+
+const deploymentSkills: SkillItem[] = [
+  brand('Docker', 'docker'),
+  brand('Git', 'git'),
+  brand('GitHub', 'github'),
+  mono('VS Code', 'VS'),
+  brand('Android Studio', 'androidstudio'),
+  brand('Postman', 'postman'),
+];
+
+const designSkills: SkillItem[] = [
+  brand('Figma', 'figma'),
+  brand('Anime.js', 'animedotjs'),
+  mono('Motion', 'Mo'),
+  mono('Kokonut UI', 'Ko'),
 ];
 
 const toolNote = 'Tools I use while building. They are not the same as hands-on product skills.';
@@ -376,12 +489,7 @@ function categories(surface: 'home' | ContentRole): SkillCategory[] {
       {
         id: 'mobile',
         title: 'Mobile development',
-        skills: [
-          brand('Flutter', 'flutter'),
-          brand('Dart', 'dart'),
-          brand('Android', 'android'),
-          brand('iOS', 'ios'),
-        ],
+        skills: mobileSkills,
       },
       {
         id: 'app-work',
@@ -407,27 +515,17 @@ function categories(surface: 'home' | ContentRole): SkillCategory[] {
       {
         id: 'frontend',
         title: 'Frontend',
-        skills: [
-          brand('HTML', 'html5'),
-          brand('CSS', 'css'),
-          brand('JavaScript', 'javascript'),
-          brand('React', 'react'),
-          brand('Tailwind CSS', 'tailwindcss'),
-        ],
+        skills: frontendSkills,
       },
       {
         id: 'backend',
         title: 'Backend',
-        skills: [
-          brand('Node.js', 'nodedotjs'),
-          brand('Express.js', 'express'),
-          { name: 'REST APIs', mark: { kind: 'outline', icon: 'api' } },
-        ],
+        skills: backendSkills,
       },
       {
         id: 'data',
         title: 'Data and deployment',
-        skills: [brand('MongoDB', 'mongodb'), brand('Git', 'git'), brand('GitHub', 'github')],
+        skills: [brand('Docker', 'docker'), brand('Git', 'git'), brand('GitHub', 'github')],
       },
       tools([...codingTools, mono('VS Code', 'VS'), brand('Postman', 'postman')]),
     ];
@@ -438,7 +536,7 @@ function categories(surface: 'home' | ContentRole): SkillCategory[] {
       {
         id: 'marketing-work',
         title: 'Marketing work',
-        skills: [social, mono('Content updates', 'Cu')],
+        skills: marketingSkills,
       },
       {
         id: 'site-support',
@@ -451,15 +549,11 @@ function categories(surface: 'home' | ContentRole): SkillCategory[] {
           brand('React', 'react'),
         ],
       },
-      tools(
-        [
-          brand('Google Analytics', 'googleanalytics'),
-          brand('Search Console', 'googlesearchconsole'),
-          brand('Tag Manager', 'googletagmanager'),
-          brand('Semrush', 'semrush'),
-        ],
-        'Tools I use. Listing them is not a claim of SEO or paid advertising work.',
-      ),
+      {
+        id: 'analytics',
+        title: 'SEO and analytics',
+        skills: analyticsSkills,
+      },
     ];
   }
 
@@ -467,49 +561,47 @@ function categories(surface: 'home' | ContentRole): SkillCategory[] {
     {
       id: 'mobile',
       title: 'Mobile development',
-      skills: [
-        brand('Flutter', 'flutter'),
-        brand('Dart', 'dart'),
-        brand('Android', 'android'),
-        brand('iOS', 'ios'),
-      ],
+      skills: mobileSkills,
     },
     {
       id: 'frontend',
       title: 'Frontend',
-      skills: [
-        brand('HTML', 'html5'),
-        brand('CSS', 'css'),
-        brand('JavaScript', 'javascript'),
-        brand('React', 'react'),
-      ],
+      skills: frontendSkills,
     },
     {
       id: 'backend',
-      title: 'Backend and data',
-      skills: [
-        brand('Node.js', 'nodedotjs'),
-        brand('Express.js', 'express'),
-        { name: 'REST APIs', mark: { kind: 'outline', icon: 'api' } },
-        brand('MongoDB', 'mongodb'),
-      ],
+      title: 'Backend and databases',
+      skills: backendSkills,
+    },
+    {
+      id: 'ai',
+      title: 'AI and integrations',
+      skills: aiSkills,
+    },
+    {
+      id: 'ai-tools',
+      title: 'AI coding tools',
+      skills: codingTools,
     },
     {
       id: 'marketing-work',
-      title: 'Digital marketing',
-      skills: [social, mono('Website updates', 'We')],
+      title: 'Marketing and automation',
+      skills: marketingSkills,
     },
-    tools([...codingTools, brand('Git', 'git'), brand('GitHub', 'github')]),
     {
-      id: 'soft-skills',
-      title: 'Working with people',
-      wide: true,
-      skills: [
-        { name: 'Teamwork', mark: { kind: 'outline', icon: 'team' } },
-        { name: 'Problem solving', mark: { kind: 'outline', icon: 'problem' } },
-        { name: 'Communication', mark: { kind: 'outline', icon: 'communication' } },
-        { name: 'Adaptability', mark: { kind: 'outline', icon: 'adapt' } },
-      ],
+      id: 'analytics',
+      title: 'SEO and analytics',
+      skills: analyticsSkills,
+    },
+    {
+      id: 'deployment',
+      title: 'Development and deployment',
+      skills: deploymentSkills,
+    },
+    {
+      id: 'design',
+      title: 'Design and animation',
+      skills: designSkills,
     },
   ];
 }
@@ -539,7 +631,7 @@ export function formatMonth(point: MonthPoint) {
 
 export function formatPeriod(item: { start: MonthPoint; end?: MonthPoint }) {
   const start = formatMonth(item.start);
-  if (!item.end) return `${start} – end date to confirm`;
+  if (!item.end) return `${start} – Present`;
   return `${start} – ${formatMonth(item.end)}`;
 }
 
@@ -573,7 +665,7 @@ export function confirmedEmployment() {
   const counted = new Set<string>();
   const included: ExperienceItem[] = [];
   const open: ExperienceItem[] = [];
-  for (const job of experiences) {
+  for (const job of experienceSource()) {
     if (!job.end) {
       open.push(job);
       continue;
@@ -592,7 +684,7 @@ export function employmentSummary() {
     .map((job) => `${job.company} (${formatPeriod(job)})`)
     .join('; ');
   const open = record.open
-    .map((job) => `${job.company} is listed from ${formatMonth(job.start)}, and that span waits on a confirmed end date`)
+    .map((job) => `${job.company} is the current role, from ${formatMonth(job.start)}`)
     .join('. ');
   const trainingNote = training.length ? ' Training sits in its own section, outside this total.' : '';
   const openNote = open ? ` ${open}.` : '';
@@ -603,8 +695,87 @@ export function employmentSummary() {
   };
 }
 
+let remoteExperiences: ExperienceItem[] | null = null;
+let remoteProjects: StoredProject[] | null = null;
+
+function experienceSource() {
+  return remoteExperiences ?? experiences;
+}
+
+function projectSource() {
+  return remoteProjects ?? projects;
+}
+
+function stringList(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === 'string').map((item) => item.trim()).filter(Boolean);
+}
+
+function projectShot(value: unknown): ProjectShot | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  const shot = value as { src?: unknown; alt?: unknown; width?: unknown; height?: unknown };
+  if (typeof shot.src !== 'string' || !/^https:\/\/pranavps\.com\/api\/uploads\/projects\/[a-z0-9]+(?:-[a-z0-9]+)*-[a-f0-9]{8}\.(jpg|png|webp)$/.test(shot.src)) {
+    return undefined;
+  }
+  const width = Number(shot.width);
+  const height = Number(shot.height);
+  if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1) return undefined;
+  const alt = typeof shot.alt === 'string' && shot.alt.trim() ? shot.alt.trim() : 'Project screenshot';
+  return { src: shot.src, alt, width, height };
+}
+
+function monthPoint(value: unknown): MonthPoint | null {
+  if (!value || typeof value !== 'object') return null;
+  const point = value as { year?: unknown; month?: unknown };
+  const year = Number(point.year);
+  const month = Number(point.month);
+  if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) return null;
+  return { year, month };
+}
+
+export function applyRemotePortfolio(data: { experiences?: unknown; projects?: unknown }) {
+  if (!Array.isArray(data.experiences) || !Array.isArray(data.projects)) return;
+  remoteExperiences = data.experiences.flatMap((item) => {
+    if (!item || typeof item !== 'object') return [];
+    const job = item as ExperienceItem;
+    const start = monthPoint(job.start);
+    if (!job.id || !job.role || !job.company || !job.location || !start) return [];
+    const end = monthPoint(job.end);
+    return [{
+      id: job.id,
+      role: job.role,
+      company: job.company,
+      location: job.location,
+      start,
+      ...(end ? { end } : {}),
+      bullets: stringList(job.bullets),
+      related: stringList(job.related),
+      technologies: stringList(job.technologies),
+      projectIds: stringList(job.projectIds),
+    }];
+  });
+  remoteProjects = data.projects.flatMap((item) => {
+    if (!item || typeof item !== 'object') return [];
+    const project = item as StoredProject;
+    if (!project.id || !project.title || !project.summary || !project.productType) return [];
+    const links = Array.isArray(project.links)
+      ? project.links.filter((link) => link && typeof link.label === 'string' && typeof link.href === 'string')
+      : [];
+    const screenshot = projectShot(project.screenshot);
+    return [{
+      ...project,
+      status: project.status === 'review' ? 'review' : 'public',
+      technologies: stringList(project.technologies),
+      tasks: stringList(project.tasks),
+      links,
+      featured: Boolean(project.featured),
+      ...(screenshot ? { screenshot } : { screenshot: undefined }),
+    }];
+  });
+}
+
 export function publicExperiences() {
-  return [...experiences].sort((a, b) => monthIndex(b.start) - monthIndex(a.start));
+  return [...experienceSource()].sort((a, b) => monthIndex(b.start) - monthIndex(a.start));
 }
 
 export function findExperience(id: string) {
@@ -612,7 +783,7 @@ export function findExperience(id: string) {
 }
 
 export function publicProjects() {
-  return projects
+  return projectSource()
     .filter((project) => project.status === 'public')
     .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)));
 }
@@ -698,7 +869,7 @@ Location: ${profile.location}
 Availability: ${profile.availability}
 Email: ${profile.email}
 Website: ${profile.url}
-Education: ${education.credential}, ${education.school}, ${education.period}
+Education: ${education.map((item) => `${item.credential}, ${item.school}, ${item.period}`).join('. ')}
 
 Confirmed employment length: ${summary.label}. ${summary.detail}
 
@@ -711,5 +882,5 @@ ${courses}
 Projects:
 ${work}
 
-Do not state an end date for ULEGENDARY DIGITAL or describe that role as current. Do not say the mobile work there used Flutter. Do not describe Luminar Technohub as a job, and do not attach production apps or shared component libraries to that course. Do not invent responsibilities for SLR SHOPPEE PVT LTD. Do not claim SEO rankings, download numbers, revenue, team leadership, or testimonials. ChooseMy Fresh website SEO is limited to the tasks listed for that project. Do not describe Pranav as a student or beginner.`;
+ULEGENDARY DIGITAL is the current role, from January 2026, shown as Present. Do not say the mobile work there used Flutter. Do not describe Luminar Technohub as a job, and do not attach production apps or shared component libraries to that course. SLR SHOPPEE PVT LTD covers a Flutter ecommerce application using GetX and Provider. Do not add responsibilities beyond those bullets. Do not claim SEO rankings, download numbers, revenue, team leadership, or testimonials. ChooseMy Fresh website SEO is limited to the tasks listed for that project. Do not describe Pranav as a student or beginner.`;
 }

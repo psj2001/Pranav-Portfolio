@@ -7,7 +7,8 @@ import {
   projectPath,
   publicExperiences,
 } from '../data/siteContent';
-import { navigate } from '../routes';
+import RouteLink from './RouteLink';
+import { entranceInitial } from './entrance';
 
 function usePrefersReducedMotion() {
   const [reduced] = useState(
@@ -28,7 +29,7 @@ export default function WorkExperience({ flutter = false, fullstack = false }: {
       <div className="mx-auto max-w-4xl px-6 py-16 lg:px-8 lg:py-20">
         <motion.header
           className="max-w-3xl"
-          initial={reduced ? false : { opacity: 0, y: 18 }}
+          initial={entranceInitial(reduced, { opacity: 0, y: 18 })}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '0px 0px -8% 0px' }}
           transition={{ duration: 0.5 }}
@@ -57,7 +58,7 @@ export default function WorkExperience({ flutter = false, fullstack = false }: {
         <motion.div
           className="mt-8 rounded-2xl border border-white/10 bg-[#07141c] p-5 sm:p-7"
           style={{ borderLeftWidth: 3, borderLeftColor: accent }}
-          initial={reduced ? false : { opacity: 0, y: 16 }}
+          initial={entranceInitial(reduced, { opacity: 0, y: 16 })}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '0px 0px -8% 0px' }}
           transition={{ duration: 0.45 }}
@@ -71,7 +72,7 @@ export default function WorkExperience({ flutter = false, fullstack = false }: {
           {jobs.map((job, index) => (
             <motion.li
               key={job.id}
-              initial={reduced ? false : { opacity: 0, y: 16 }}
+              initial={entranceInitial(reduced, { opacity: 0, y: 16 })}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '0px 0px -8% 0px' }}
               transition={{ duration: 0.45, delay: reduced ? 0 : index * 0.04 }}
@@ -115,15 +116,14 @@ export default function WorkExperience({ flutter = false, fullstack = false }: {
                       const project = findPublicProject(id);
                       if (!project) return null;
                       return (
-                        <button
+                        <RouteLink
                           key={id}
-                          type="button"
-                          onClick={() => navigate(projectPath(id))}
-                          className={`min-h-11 rounded-full border px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${accentText}`}
+                          href={projectPath(id)}
+                          className={`inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${accentText}`}
                           style={{ borderColor: accent }}
                         >
                           {project.title} case study
-                        </button>
+                        </RouteLink>
                       );
                     })}
                   </div>

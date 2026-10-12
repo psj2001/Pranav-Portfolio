@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Mail, MapPin, Send } from 'lucide-react';
 import { motion } from 'motion/react';
+import { entranceInitial } from './entrance';
 import { profile } from '../data/siteContent';
 
 interface ContactMeProps {
@@ -107,7 +108,7 @@ export default function ContactMe({
       <div className="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-12 lg:px-8">
         <motion.div
           className="lg:col-span-5"
-          initial={{ opacity: 0, y: 16 }}
+          initial={entranceInitial(false, { opacity: 0, y: 16 })}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.45 }}
@@ -143,7 +144,7 @@ export default function ContactMe({
 
         <motion.div
           className="lg:col-span-7"
-          initial={{ opacity: 0, y: 16 }}
+          initial={entranceInitial(false, { opacity: 0, y: 16 })}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.45, delay: 0.05 }}
