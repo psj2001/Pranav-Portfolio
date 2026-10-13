@@ -1,5 +1,5 @@
 import type { CSSProperties, Key, MouseEvent, ReactNode } from 'react';
-import { goHome, navigate } from '../routes';
+import { goHome, navigate, toPublicPath } from '../routes';
 
 type RouteLinkProps = {
   key?: Key;
@@ -30,9 +30,10 @@ function openRoute(href: string) {
 }
 
 export default function RouteLink({ href, className, style, children, onClick }: RouteLinkProps) {
+  const publicHref = toPublicPath(href);
   return (
     <a
-      href={href}
+      href={publicHref}
       className={className}
       style={style}
       onClick={(event) => {

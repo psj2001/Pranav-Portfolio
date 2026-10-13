@@ -1,0 +1,22 @@
+---
+description: Upload or deploy to pranavps.com only after the user explicitly asks
+alwaysApply: true
+---
+
+# Deploy only with permission
+
+Do not upload this project to the server unless the user explicitly asks to deploy or upload in the current message.
+
+That includes `npm run deploy`, `scripts/deploy-hostinger.sh`, rsync, scp, SSH copies into the hosting account, and publishing a zip to pranavps.com.
+
+A local build, a local zip, or an edit to the site is not permission to deploy. Words like "fix this", "add this", or "is there anything we have to do" are not permission either.
+
+If the live site needs the change and the user has not asked to deploy, say so and wait.
+
+```text
+User: add the tag to the head
+Do: edit the file. Stop. Do not run npm run deploy.
+
+User: deploy this
+Do: run npm run deploy.
+```

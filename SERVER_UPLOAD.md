@@ -12,6 +12,8 @@ Zip: `pranavps-server-upload.zip`
 
 ## Included
 
+- Google Tag Manager `GTM-N68C5S4P` is in the page head and at the start of the body.
+- The search favicon is a 144×144 PNG of the portrait, linked ahead of the smaller icons.
 - `site/` is the built website. Unknown `/blog/...` addresses load the site instead of a hard 404.
 - `api/content.php`, `api/posts.php`, and `api/upload.php` publish blog posts. A post can include up to 8 JPEG, PNG, or WebP images under `uploads/posts/`.
 - CREOVA is removed from the site and from the seed data.

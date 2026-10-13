@@ -2,6 +2,7 @@ import AboutMe from './AboutMe';
 import ContactMe from './ContactMe';
 import Education from './Education';
 import ExperienceProjects from './ExperienceProjects';
+import { FullStackCapabilities, MarketingWork } from './RoleFocus';
 import SkillsArsenal from './SkillsArsenal';
 import WorkExperience from './WorkExperience';
 import { BLOG_TRACKS, ROLE_ROUTES, type RoleId } from '../routes';
@@ -18,8 +19,10 @@ export default function RolePage({ role }: { role: RoleId }) {
     <>
       <AboutMe variant={role} />
       {flutter ? <WorkExperience flutter /> : null}
+      {fullstack ? <FullStackCapabilities /> : null}
+      {marketing ? <MarketingWork /> : null}
       <SkillsArsenal surface={role} flutter={flutter} fullstack={fullstack} marketing={marketing} />
-      {flutter || marketing ? null : <WorkExperience fullstack={fullstack} />}
+      {flutter ? null : <WorkExperience fullstack={fullstack} marketing={marketing} />}
       <ExperienceProjects
         surface={role}
         accent={flutter ? 'flutter' : fullstack ? 'fullstack' : 'marketing'}

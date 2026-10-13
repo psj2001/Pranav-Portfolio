@@ -6,8 +6,10 @@ import portrait from '../portfolio-hero-assets/pranav-portrait.webp';
 import flutterIcon from '../portfolio-hero-assets/flutter-icon.svg';
 import fullStackIcon from '../portfolio-hero-assets/full-stack-icon.svg';
 import marketingIcon from '../portfolio-hero-assets/digital-marketing-icon.svg';
+import { trackEvent } from '../analytics';
 import { profile } from '../data/siteContent';
-import { ROLE_ROUTES } from '../routes';
+import { ROLE_ROUTES, toPublicPath } from '../routes';
+import Breadcrumb from './Breadcrumb';
 import { entranceInitial } from './entrance';
 import { followRoute } from './RouteLink';
 import '../portfolio-hero-assets/design-tokens.css';
@@ -101,6 +103,13 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
       <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 items-center px-6 pb-8 pt-28 lg:px-8 lg:pt-24">
         <div className="grid w-full items-center gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-6">
           <div className="max-w-xl">
+            {flutter || fullstack || marketing ? (
+              <div className="mb-5">
+                <Breadcrumb
+                  path={flutter ? ROLE_ROUTES.flutter.path : fullstack ? ROLE_ROUTES.fullstack.path : ROLE_ROUTES.marketing.path}
+                />
+              </div>
+            ) : null}
             <motion.p
               className="hero-reveal text-[11px] font-semibold uppercase tracking-[0.22em] text-[#a7b5c5] sm:text-xs"
               initial={entranceInitial(reduced, { opacity: 0, y: 18 })}
@@ -140,9 +149,9 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
                 </>
               ) : marketing ? (
                 <>
-                  Digital marketing
+                  Digital Marketing
                   <br />
-                  and websites
+                  Specialist
                   <br />
                   <span className="text-[#FFD000]">in Dubai</span>
                 </>
@@ -198,6 +207,11 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
                 <a
                   href={cvHref}
                   download
+                  onClick={() =>
+                    trackEvent('cv_download', {
+                      cv_role: flutter ? 'flutter' : fullstack ? 'fullstack' : 'marketing',
+                    })
+                  }
                   className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full border px-6 py-3.5 text-[15px] font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                     flutter ? 'border-[#027DFD]' : fullstack ? 'border-[#FF7A00]' : 'border-[#FFD000]'
                   }`}
@@ -287,7 +301,7 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
             {services.map((service, index) => (
               <motion.a
                 key={service.role}
-                href={service.path}
+                href={toPublicPath(service.path)}
                 onClick={(event) => followRoute(event, service.path)}
                 className={`hero-reveal group flex items-center gap-3 px-3 py-3 text-left transition hover:bg-white/[0.03] sm:px-5 ${
                   index > 0 ? 'sm:border-l sm:border-[#1a3038]' : ''

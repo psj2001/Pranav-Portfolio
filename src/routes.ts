@@ -34,8 +34,19 @@ export const ROLE_ROUTES: Record<RoleId, { path: string; interest: string; title
 };
 
 function normalizePath(pathname: string) {
-  if (pathname.length > 1 && pathname.endsWith('/')) return pathname.slice(0, -1);
-  return pathname || '/';
+  const path = pathname.split('#')[0] || '/';
+  if (path.length > 1 && path.endsWith('/')) return path.slice(0, -1);
+  return path || '/';
+}
+
+/** Public URL path. Directory routes keep the trailing slash used in canonicals. */
+export function toPublicPath(path: string) {
+  if (path.startsWith('/#')) return path;
+  const hashAt = path.indexOf('#');
+  const hash = hashAt >= 0 ? path.slice(hashAt) : '';
+  const normalized = normalizePath(path);
+  if (normalized === '/') return hash ? `/${hash}` : '/';
+  return `${normalized}/${hash}`;
 }
 
 export function roleFromPath(pathname: string): RoleId | null {
@@ -89,8 +100,8 @@ export function caseStudyFromPath(pathname: string) {
 }
 
 export function navigate(path: string) {
-  const next = normalizePath(path);
-  if (normalizePath(window.location.pathname) === next && !window.location.hash) {
+  const next = toPublicPath(path);
+  if (normalizePath(window.location.pathname) === normalizePath(next) && !window.location.hash && !next.includes('#')) {
     window.scrollTo({ top: 0, behavior: scrollBehavior() });
     return;
   }

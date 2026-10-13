@@ -19,7 +19,9 @@ import { accentForProduct } from './components/ProjectCard';
 import { BLOG_HUB_PATH, blogFromPath, caseStudyFromPath, ROLE_ROUTES, roleFromPath, scrollBehavior, usePathname } from './routes';
 import { markEntranceReady } from './components/entrance';
 import RouteLink from './components/RouteLink';
+import { trackEvent } from './analytics';
 import { Terminal } from 'lucide-react';
+import { siBuymeacoffee, siInstagram, siMedium, siReddit } from 'simple-icons';
 
 const footerLinks = [
   { href: ROLE_ROUTES.flutter.path, label: 'Flutter developer' },
@@ -27,6 +29,18 @@ const footerLinks = [
   { href: ROLE_ROUTES.marketing.path, label: 'Digital marketer' },
   { href: BLOG_HUB_PATH, label: 'Blog' },
   { href: '/#contact', label: 'Contact' },
+];
+
+const linkedInIcon = {
+  path: 'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z',
+};
+
+const profileLinks: { href: string; label: string; path: string }[] = [
+  { href: 'https://www.linkedin.com/in/pranav-p-s/', label: 'LinkedIn', path: linkedInIcon.path },
+  { href: 'https://www.instagram.com/_pranav_p_s_j/', label: 'Instagram', path: siInstagram.path },
+  { href: 'https://medium.com/@pranavputhoor91', label: 'Medium', path: siMedium.path },
+  { href: 'https://www.reddit.com/u/Pranavpsj/s/CQhffN52wn', label: 'Reddit', path: siReddit.path },
+  { href: 'https://buymeacoffee.com/pranavps', label: 'Buy Me a Coffee', path: siBuymeacoffee.path },
 ];
 
 export default function App({ initialPath = '/' }: { initialPath?: string }) {
@@ -81,7 +95,7 @@ export default function App({ initialPath = '/' }: { initialPath?: string }) {
           : role === 'fullstack'
           ? ['home', 'about', 'skills', 'experience', 'projects', 'contact']
           : role === 'marketing'
-            ? ['home', 'about', 'skills', 'projects', 'contact']
+            ? ['home', 'about', 'skills', 'experience', 'projects', 'contact']
             : ['home', 'about', 'what-i-do', 'skills', 'experience', 'projects', 'contact'];
       let currentSection = 'home';
 
@@ -173,6 +187,24 @@ export default function App({ initialPath = '/' }: { initialPath?: string }) {
               <RouteLink key={link.href} href={link.href} className="text-[#c5d2de] hover:text-white">
                 {link.label}
               </RouteLink>
+            ))}
+          </nav>
+          <nav aria-label="Profiles" className="flex flex-wrap items-center justify-center gap-1">
+            {profileLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={link.label}
+                title={link.label}
+                onClick={() => trackEvent('outbound_click', { link_url: link.href, link_text: link.label })}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full text-[#c5d2de] transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+                  <path d={link.path} fill="currentColor" />
+                </svg>
+              </a>
             ))}
           </nav>
           <div className="font-mono text-[10px] uppercase tracking-widest text-[#a4afd5]/30">© 2026 Pranav P S. All rights reserved.</div>

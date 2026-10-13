@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
 import { formatBlogDate, postsForTrack } from '../data/blogPosts';
-import { BLOG_HUB_PATH, BLOG_TRACKS } from '../routes';
+import { BLOG_HUB_PATH, BLOG_TRACKS, toPublicPath } from '../routes';
 import RouteLink, { followRoute } from './RouteLink';
 import { entranceInitial } from './entrance';
 import type { BlogTrack } from '../types';
@@ -72,7 +72,7 @@ export function BlogHub() {
             return (
               <motion.a
                 key={track}
-                href={BLOG_TRACKS[track].path}
+                href={toPublicPath(BLOG_TRACKS[track].path)}
                 onClick={(event) => followRoute(event, BLOG_TRACKS[track].path)}
                 className={`group cursor-pointer rounded-2xl border bg-[#07141c] p-7 text-left transition-colors hover:bg-[#0b1c26] ${content.accentBorder}`}
                 initial={entranceInitial(reduced, { opacity: 0, y: 18 })}

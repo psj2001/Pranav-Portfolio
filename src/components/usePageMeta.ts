@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { trackEvent } from '../analytics';
 import { canonicalUrl, pageMetaForPath, structuredData } from '../data/pageMeta';
 import { SITE_URL, profile } from '../data/siteContent';
 
@@ -32,6 +33,8 @@ function upsertRobots(content?: string) {
 }
 
 export function usePageMeta(pathname: string, ready = false) {
+  const seen = useRef<string | null>(null);
+
   useEffect(() => {
     const page = pageMetaForPath(pathname);
     const url = canonicalUrl(page.path);
@@ -58,5 +61,13 @@ export function usePageMeta(pathname: string, ready = false) {
       document.head.appendChild(script);
     }
     script.textContent = JSON.stringify(structuredData(page));
+
+    if (seen.current === null) {
+      seen.current = pathname;
+      return;
+    }
+    if (seen.current === pathname) return;
+    seen.current = pathname;
+    trackEvent('virtual_page_view', { page_path: url.replace(SITE_URL, ''), page_title: page.title });
   }, [pathname, ready]);
 }

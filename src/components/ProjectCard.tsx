@@ -1,9 +1,11 @@
+import { trackEvent } from '../analytics';
 import {
   contributionKindLabel,
   engagementLabel,
   productTypeLabel,
   projectPath,
 } from '../data/siteContent';
+import { ROLE_ROUTES } from '../routes';
 import type { ProjectItem } from '../types';
 import RouteLink from './RouteLink';
 
@@ -47,8 +49,34 @@ export function accentForProduct(type: ProjectItem['productType']): ProjectAccen
   return 'home';
 }
 
-export default function ProjectCard({ project, accent = 'home' }: { project: ProjectItem; accent?: ProjectAccent }) {
+function roleLinks(project: ProjectItem, surface: 'home' | ProjectAccent) {
+  const links: { href: string; label: string }[] = [];
+  if (project.productType === 'mobile-app' && surface !== 'flutter') {
+    links.push({ href: ROLE_ROUTES.flutter.path, label: 'Flutter developer' });
+  }
+  if (
+    (project.productType === 'website' || project.productType === 'dashboard' || project.alsoTypes?.includes('website')) &&
+    surface !== 'fullstack'
+  ) {
+    links.push({ href: ROLE_ROUTES.fullstack.path, label: 'Full-stack developer' });
+  }
+  if ((project.productType === 'marketing' || project.alsoTypes?.includes('marketing')) && surface !== 'marketing') {
+    links.push({ href: ROLE_ROUTES.marketing.path, label: 'Digital marketer' });
+  }
+  return links;
+}
+
+export default function ProjectCard({
+  project,
+  accent = 'home',
+  surface = 'home',
+}: {
+  project: ProjectItem;
+  accent?: ProjectAccent;
+  surface?: 'home' | ProjectAccent;
+}) {
   const tone = accents[accent];
+  const relatedRoles = roleLinks(project, surface);
 
   return (
     <article id={`project-${project.id}`} className="scroll-mt-28 flex h-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-[#07141c]">
@@ -111,12 +139,22 @@ export default function ProjectCard({ project, accent = 'home' }: { project: Pro
               href={link.href}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackEvent('outbound_click', { link_url: link.href, link_text: link.label })}
               className={`inline-flex min-h-11 items-center justify-center rounded-full border border-white/15 px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${tone.link}`}
             >
               {link.label}
             </a>
           ))}
         </div>
+        {relatedRoles.length > 0 ? (
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
+            {relatedRoles.map((link) => (
+              <RouteLink key={link.href} href={link.href} className={`text-sm font-semibold underline-offset-4 hover:underline ${tone.link}`}>
+                {link.label}
+              </RouteLink>
+            ))}
+          </div>
+        ) : null}
       </div>
     </article>
   );

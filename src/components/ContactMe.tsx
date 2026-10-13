@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Mail, MapPin, Send } from 'lucide-react';
 import { motion } from 'motion/react';
+import { trackEvent } from '../analytics';
 import { entranceInitial } from './entrance';
 import { profile } from '../data/siteContent';
 
@@ -30,6 +31,9 @@ export default function ContactMe({
   const [message, setMessage] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [errors, setErrors] = useState<{ fullName?: string; email?: string; message?: string }>({});
+  const [reduced] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  );
 
   const accent = flutter ? 'text-[#027DFD]' : fullstack ? 'text-[#FF7A00]' : marketing ? 'text-[#FFD000]' : 'text-[#00e5e5]';
   const ring = flutter ? 'focus-visible:border-[#027DFD]' : fullstack ? 'focus-visible:border-[#FF7A00]' : marketing ? 'focus-visible:border-[#FFD000]' : 'focus-visible:border-[#00e5e5]';
@@ -93,6 +97,7 @@ export default function ContactMe({
         return;
       }
       setStatus('sent');
+      trackEvent('contact_submit', { interest });
       setFullName('');
       setEmail('');
       setInterest(defaultInterest);
@@ -108,7 +113,7 @@ export default function ContactMe({
       <div className="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-12 lg:px-8">
         <motion.div
           className="lg:col-span-5"
-          initial={entranceInitial(false, { opacity: 0, y: 16 })}
+          initial={entranceInitial(reduced, { opacity: 0, y: 16 })}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.45 }}
@@ -144,7 +149,7 @@ export default function ContactMe({
 
         <motion.div
           className="lg:col-span-7"
-          initial={entranceInitial(false, { opacity: 0, y: 16 })}
+          initial={entranceInitial(reduced, { opacity: 0, y: 16 })}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.45, delay: 0.05 }}

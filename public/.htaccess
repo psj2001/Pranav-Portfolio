@@ -3,6 +3,15 @@ ErrorDocument 404 /404.html
 RewriteEngine On
 RewriteBase /
 
+# Directory routes use a trailing slash. Leave files and the PHP API alone.
+RewriteCond %{REQUEST_METHOD} GET [OR]
+RewriteCond %{REQUEST_METHOD} HEAD
+RewriteCond %{REQUEST_URI} !^/api/
+RewriteCond %{REQUEST_URI} !/$
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} !\.[A-Za-z0-9]{1,8}$
+RewriteRule ^(.+)$ /$1/ [R=301,L]
+
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]

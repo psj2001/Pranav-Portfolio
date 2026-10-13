@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
+import { projectPath, profile } from '../data/siteContent';
+import { ROLE_ROUTES } from '../routes';
 import { entranceInitial } from './entrance';
-import { profile } from '../data/siteContent';
+import RouteLink from './RouteLink';
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
 
@@ -92,7 +94,11 @@ export default function AboutMe({ variant = 'home' }: { variant?: 'home' | 'flut
           ) : variant === 'fullstack' ? (
             <>
               <p>
-                I build websites, dashboards, and the APIs behind them. The public work I can point to uses React, Node.js, Express, and MongoDB.
+                I build websites, dashboards, and the APIs behind them. The public work I can point to uses React, Node.js, Express, and MongoDB on{' '}
+                <RouteLink href={projectPath('crm-falcon')} className={`font-semibold underline-offset-4 hover:underline ${accent}`}>
+                  CRM Falcon Force
+                </RouteLink>
+                .
               </p>
               <p>
                 That includes the screens people use and the endpoints those screens call. I keep the two sides aligned so a change in the product is a change in the system, not only in the page.
@@ -101,7 +107,11 @@ export default function AboutMe({ variant = 'home' }: { variant?: 'home' | 'flut
           ) : variant === 'marketing' ? (
             <>
               <p>
-                I created the ChooseMy Fresh website, managed its social media platforms, and worked on its website SEO.
+                I created the{' '}
+                <RouteLink href={projectPath('choosemyfresh')} className={`font-semibold underline-offset-4 hover:underline ${accent}`}>
+                  ChooseMy Fresh
+                </RouteLink>{' '}
+                website, managed its social media platforms, and worked on its website SEO.
               </p>
               <p>
                 I also work on social content, SEO, and ads, including Meta Ads, Google Ads, and WhatsApp automation.
@@ -110,10 +120,26 @@ export default function AboutMe({ variant = 'home' }: { variant?: 'home' | 'flut
           ) : (
             <>
               <p>
-                I’m {profile.name}, based in {profile.location}. I build and maintain apps for Android and iOS, and I build websites and dashboards that sit with them.
+                I’m {profile.name}, based in {profile.location}. I build and maintain{' '}
+                <RouteLink href={ROLE_ROUTES.flutter.path} className={`font-semibold underline-offset-4 hover:underline ${accent}`}>
+                  apps for Android and iOS
+                </RouteLink>
+                , and I build{' '}
+                <RouteLink href={ROLE_ROUTES.fullstack.path} className={`font-semibold underline-offset-4 hover:underline ${accent}`}>
+                  websites and dashboards
+                </RouteLink>{' '}
+                that sit with them.
               </p>
               <p>
-                I also do digital marketing work: social content, website updates, and website SEO. For ChooseMy Fresh, I created the website, managed its social media platforms, and worked on its website SEO. {profile.availability}.
+                I also do{' '}
+                <RouteLink href={ROLE_ROUTES.marketing.path} className={`font-semibold underline-offset-4 hover:underline ${accent}`}>
+                  digital marketing
+                </RouteLink>{' '}
+                work: social content, website updates, and website SEO. For{' '}
+                <RouteLink href={projectPath('choosemyfresh')} className={`font-semibold underline-offset-4 hover:underline ${accent}`}>
+                  ChooseMy Fresh
+                </RouteLink>
+                , I created the website, managed its social media platforms, and worked on its website SEO. {profile.availability}.
               </p>
             </>
           )}

@@ -106,7 +106,11 @@ export default function ExperienceProjects({
           <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
             {visible.map((project) => (
               <div key={project.id} className="h-full">
-                <ProjectCard project={project} accent={accent === 'home' ? accentForProduct(project.productType) : accent} />
+                <ProjectCard
+                  project={project}
+                  surface={surface}
+                  accent={accent === 'home' ? accentForProduct(project.productType) : accent}
+                />
               </div>
             ))}
           </div>
