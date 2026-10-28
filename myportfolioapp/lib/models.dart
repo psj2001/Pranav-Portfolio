@@ -106,6 +106,42 @@ class ProjectShot {
       };
 }
 
+class ProjectView {
+  ProjectView({
+    required this.type,
+    this.label,
+    required this.shots,
+    required this.links,
+  });
+
+  final String type;
+  final String? label;
+  final List<ProjectShot> shots;
+  final List<ProjectLink> links;
+
+  factory ProjectView.fromJson(Map<String, dynamic> json) {
+    final rawShots = json['shots'];
+    final rawLinks = json['links'];
+    return ProjectView(
+      type: json['type'] as String? ?? 'mobile-app',
+      label: json['label'] as String?,
+      shots: rawShots is List
+          ? rawShots.whereType<Map>().map((shot) => ProjectShot.fromJson(Map<String, dynamic>.from(shot))).toList()
+          : const [],
+      links: rawLinks is List
+          ? rawLinks.whereType<Map>().map((link) => ProjectLink.fromJson(Map<String, dynamic>.from(link))).toList()
+          : const [],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'type': type,
+        if (label != null && label!.trim().isNotEmpty) 'label': label!.trim(),
+        'shots': shots.map((shot) => shot.toJson()).toList(),
+        'links': links.map((link) => link.toJson()).toList(),
+      };
+}
+
 class ProjectItem {
   ProjectItem({
     required this.id,
@@ -125,6 +161,7 @@ class ProjectItem {
     this.experienceId,
     required this.alsoTypes,
     required this.audiences,
+    required this.views,
   });
 
   final String id;
@@ -144,6 +181,7 @@ class ProjectItem {
   final String? experienceId;
   final List<String> alsoTypes;
   final List<String> audiences;
+  final List<ProjectView> views;
 
   factory ProjectItem.fromJson(Map<String, dynamic> json) {
     final rawLinks = json['links'];
@@ -167,6 +205,9 @@ class ProjectItem {
       experienceId: json['experienceId'] as String?,
       alsoTypes: _strings(json['alsoTypes']),
       audiences: _strings(json['audiences']),
+      views: json['views'] is List
+          ? (json['views'] as List).whereType<Map>().map((view) => ProjectView.fromJson(Map<String, dynamic>.from(view))).toList()
+          : const [],
     );
   }
 
@@ -188,6 +229,7 @@ class ProjectItem {
         if (experienceId != null && experienceId!.isNotEmpty) 'experienceId': experienceId,
         'alsoTypes': alsoTypes,
         'audiences': audiences,
+        if (views.isNotEmpty) 'views': views.map((view) => view.toJson()).toList(),
       };
 }
 

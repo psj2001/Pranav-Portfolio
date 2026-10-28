@@ -5,9 +5,11 @@ import { indexablePages, pageMetaForPath, renderHead, renderNoscript, renderRobo
 
 export async function writeRouteFiles(distDir: string) {
   const indexPath = path.join(distDir, 'index.html');
-  const template = fs.readFileSync(indexPath, 'utf8');
+  const template = inlineStylesheet(fs.readFileSync(indexPath, 'utf8'), distDir);
   const serverEntry = path.join(distDir, 'ssr', 'entry-server.js');
-  const { render } = (await import(pathToFileURL(serverEntry).href)) as { render: (url: string) => string };
+  const { render } = (await import(pathToFileURL(serverEntry).href)) as {
+    render: (url: string) => Promise<string>;
+  };
 
   const pages: PageMeta[] = [...indexablePages(), pageMetaForPath('/404')];
 
@@ -15,7 +17,7 @@ export async function writeRouteFiles(distDir: string) {
     const html = template
       .replace(/<!--route-meta-->[\s\S]*?<!--\/route-meta-->/, `<!--route-meta-->${renderHead(page)}<!--/route-meta-->`)
       .replace(/<!--noscript-->[\s\S]*?<!--\/noscript-->/, `<!--noscript-->${renderNoscript(page)}<!--/noscript-->`)
-      .replace('<div id="root"></div>', `<div id="root">${render(page.path)}</div>`);
+      .replace('<div id="root"></div>', `<div id="root">${await render(page.path)}</div>`);
 
     if (page.path === '/404') {
       fs.writeFileSync(path.join(distDir, '404.html'), html);
@@ -35,4 +37,12 @@ export async function writeRouteFiles(distDir: string) {
   fs.writeFileSync(path.join(distDir, 'sitemap.xml'), renderSitemap());
   fs.writeFileSync(path.join(distDir, 'robots.txt'), renderRobots());
   fs.rmSync(path.join(distDir, 'ssr'), { recursive: true, force: true });
+}
+
+function inlineStylesheet(html: string, distDir: string) {
+  return html.replace(/<link rel="stylesheet"[^>]*href="([^"]+)"[^>]*>/g, (_full, href: string) => {
+    const relative = href.startsWith('/') ? href.slice(1) : href;
+    const css = fs.readFileSync(path.join(distDir, relative), 'utf8').replace(/<\/style/gi, '<\\/style');
+    return `<style>${css}</style>`;
+  });
 }

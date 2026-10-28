@@ -48,6 +48,15 @@ export interface ProjectShot {
   height: number;
 }
 
+/** One product inside a project, such as the app and the CRM on the same client. */
+export interface ProjectView {
+  type: ProductType;
+  /** Shown on the switcher. Dashboard can read “CRM”. */
+  label?: string;
+  shots: ProjectShot[];
+  links: ProjectLink[];
+}
+
 export interface ProjectItem {
   id: string;
   title: string;
@@ -62,6 +71,8 @@ export interface ProjectItem {
   completed?: string;
   screenshot?: ProjectShot;
   links: ProjectLink[];
+  /** App, website, or CRM parts a visitor can switch between. */
+  views?: ProjectView[];
   featured?: boolean;
   experienceId?: string;
   /** Extra type filters, in addition to `productType`. */

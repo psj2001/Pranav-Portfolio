@@ -15,6 +15,12 @@ export type BlogLocation =
   | { kind: 'index'; track: BlogTrack }
   | { kind: 'article'; track: BlogTrack; slug: string };
 
+export const SHOPIFY_ROUTE = {
+  path: '/shopify',
+  interest: 'Shopify',
+  title: 'Shopify',
+};
+
 export const ROLE_ROUTES: Record<RoleId, { path: string; interest: string; title: string }> = {
   flutter: {
     path: '/flutter-developer',
@@ -55,6 +61,10 @@ export function roleFromPath(pathname: string): RoleId | null {
     ([, route]) => route.path === path,
   );
   return match?.[0] ?? null;
+}
+
+export function shopifyFromPath(pathname: string) {
+  return normalizePath(pathname) === SHOPIFY_ROUTE.path ? SHOPIFY_ROUTE : null;
 }
 
 export function blogFromPath(pathname: string): BlogLocation | null {
@@ -109,23 +119,38 @@ export function navigate(path: string) {
   publishPath();
 }
 
+function scrollToSection(id: string) {
+  const started = performance.now();
+  const align = () => {
+    if (window.location.hash.slice(1) !== id) return;
+    const element = document.getElementById(id);
+    if (!element) {
+      if (performance.now() - started < 1200) requestAnimationFrame(align);
+      return;
+    }
+    const top = Math.max(0, element.getBoundingClientRect().top + window.scrollY - 85);
+    window.scrollTo({ top, behavior: scrollBehavior() });
+  };
+  requestAnimationFrame(align);
+}
+
 export function goHome(section?: string) {
   const target = !section || section === 'home' ? '/' : `/#${section}`;
   const current = `${normalizePath(window.location.pathname)}${window.location.hash}`;
-  if (current === target) {
+  const scroll = () => {
     if (!section || section === 'home') {
       window.scrollTo({ top: 0, behavior: scrollBehavior() });
       return;
     }
-    const element = document.getElementById(section);
-    if (element) {
-      const top = element.getBoundingClientRect().top + window.scrollY - 85;
-      window.scrollTo({ top, behavior: scrollBehavior() });
-    }
+    scrollToSection(section);
+  };
+  if (current === target) {
+    scroll();
     return;
   }
   window.history.pushState({}, '', target);
   publishPath();
+  scroll();
 }
 
 export function usePathname(initialPath = '/') {

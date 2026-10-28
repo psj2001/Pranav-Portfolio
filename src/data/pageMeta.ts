@@ -19,6 +19,8 @@ import {
   training,
 } from './siteContent';
 import type { BlogBlock, BlogTrack } from '../types';
+import { SHOPIFY_ROUTE } from '../routes';
+import { shopifyFaqs } from './shopifyPage';
 
 export interface PageMeta {
   path: string;
@@ -30,7 +32,7 @@ export interface PageMeta {
   robots?: 'noindex';
 }
 
-const pages: Record<'home' | 'flutter' | 'fullstack' | 'marketing' | 'blog' | 'software' | 'marketingBlog', PageMeta> = {
+const pages: Record<'home' | 'flutter' | 'fullstack' | 'marketing' | 'shopify' | 'blog' | 'software' | 'marketingBlog', PageMeta> = {
   home: {
     path: '/',
     title: 'Pranav P S | Mobile App Developer & Digital Marketer in Dubai',
@@ -58,6 +60,14 @@ const pages: Record<'home' | 'flutter' | 'fullstack' | 'marketing' | 'blog' | 's
     description:
       'Explore digital marketing, SEO, social media management, website optimization, and online branding work by Pranav P S in Dubai.',
     noscript: '',
+  },
+  shopify: {
+    path: SHOPIFY_ROUTE.path,
+    title: 'Shopify Website & Mobile App Developer | Flutter | Pranav P S',
+    description:
+      'Custom Shopify website development and Flutter mobile apps for existing Shopify stores. Android, iOS, Shopify API integrations and agency collaboration.',
+    noscript:
+      'Pranav P S builds custom Shopify storefronts and Flutter apps for Android and iOS that connect to an existing Shopify store. Products, pricing, cart, and checkout use supported Shopify APIs. Trendirea is a portfolio demonstration using Flutter, the Shopify Storefront GraphQL API, the Shopify Customer Account API, and Firebase. Demo: https://youtu.be/SpBAgTKE-t8. Contact is on the home page.',
   },
   blog: {
     path: BLOG_HUB_PATH,
@@ -91,11 +101,11 @@ function homeNoscript() {
 }
 
 pages.home.noscript = homeNoscript();
-pages.flutter.noscript = `${profile.name}, Flutter developer in ${profile.location}. ${employmentSummary().label} of confirmed employment. ${employmentSummary().detail} ${publicExperiences()
+pages.flutter.noscript = `${profile.name}, Flutter developer in ${profile.location}. ${employmentSummary().label} of experience. ${publicExperiences()
   .map((job) => `${job.role} at ${job.company}, ${job.location}, ${formatPeriod(job)}. ${[...job.bullets, ...job.related].join(' ')}`)
   .join(' ')} Training: ${training.map((item) => `${item.course} at ${item.provider}, ${item.location}, ${formatPeriod(item)}.`).join(' ')}`;
-pages.fullstack.noscript = `${profile.name}, full-stack developer in ${profile.location}. Websites, dashboards, and APIs, including the Tripzza website, the Falcon Force Academy website, CRM Falcon Force with React, Node.js, Express, and MongoDB, and the ChooseMy Fresh website.`;
-pages.marketing.noscript = `${profile.name} works on social content, SEO, and ads in ${profile.location}. For ChooseMy Fresh, he created the website, managed its social media platforms, and worked on its website SEO. Skills include Meta Ads, Google Ads, and WhatsApp automation.`;
+pages.fullstack.noscript = `${profile.name}, full-stack developer in ${profile.location}. Websites, dashboards, and APIs, including the Tripzza website, the Falcon Force Academy website, CRM Falcon Force with React, Node.js, Express, and MongoDB, and the ChooseMy Fresh website and CRM.`;
+pages.marketing.noscript = `${profile.name} works on social content, SEO, and ads in ${profile.location}. For ChooseMy Fresh, he worked on the mobile app and the CRM, created the website, managed its social media platforms, and worked on its website SEO. Skills include Meta Ads, Google Ads, and WhatsApp automation.`;
 
 function stripSlash(pathname: string) {
   if (pathname.length > 1 && pathname.endsWith('/')) return pathname.slice(0, -1);
@@ -127,7 +137,7 @@ export function indexablePages(): PageMeta[] {
       ),
     })),
   );
-  return [pages.home, pages.flutter, pages.fullstack, pages.marketing, pages.blog, pages.software, pages.marketingBlog, ...caseStudies, ...articles];
+  return [pages.home, pages.flutter, pages.fullstack, pages.marketing, pages.shopify, pages.blog, pages.software, pages.marketingBlog, ...caseStudies, ...articles];
 }
 
 function blockPlainText(block: BlogBlock) {
@@ -206,7 +216,10 @@ function escapeHtml(value: string) {
     .replace(/"/g, '&quot;');
 }
 
-const shareImage = `${SITE_URL}/og-portrait.jpg`;
+const portraitImage = `${SITE_URL}/og-portrait.jpg`;
+const shareImage = `${SITE_URL}/og-share.jpg`;
+const shareWidth = '1200';
+const shareHeight = '630';
 const personId = `${SITE_URL}/#person`;
 const websiteId = `${SITE_URL}/#website`;
 
@@ -222,7 +235,7 @@ function personNode() {
     name: profile.name,
     jobTitle: ['Flutter developer', 'Full-stack developer', 'Digital marketer'],
     email: profile.email,
-    image: shareImage,
+    image: portraitImage,
     url: `${SITE_URL}/`,
     address: {
       '@type': 'PostalAddress',
@@ -253,6 +266,7 @@ export function breadcrumbsForPath(pathname: string): BreadcrumbItem[] | null {
   const path = stripSlash(pathname);
   const role = roleCrumb(path);
   if (role) return [{ name: 'Home', path: '/' }, role];
+  if (path === SHOPIFY_ROUTE.path) return [{ name: 'Home', path: '/' }, { name: SHOPIFY_ROUTE.title, path }];
   if (!path.startsWith('/work/')) return null;
   const id = path.split('/').filter(Boolean)[1];
   const project = publicProjects().find((item) => item.id === id);
@@ -288,6 +302,43 @@ export function personSchema() {
 export function structuredData(page: PageMeta) {
   const canonical = canonicalUrl(page.path);
   const crumbs = breadcrumbsForPath(page.path);
+  if (stripSlash(page.path) === SHOPIFY_ROUTE.path && crumbs) {
+    return {
+      '@context': 'https://schema.org',
+      '@graph': [
+        personNode(),
+        websiteNode(),
+        {
+          '@type': 'WebPage',
+          '@id': canonical,
+          name: page.title,
+          url: canonical,
+          description: page.description,
+          isPartOf: { '@id': websiteId },
+        },
+        {
+          '@type': 'Service',
+          name: 'Shopify website and mobile app development',
+          serviceType: 'Shopify storefront development and Flutter shopping apps',
+          description: page.description,
+          url: canonical,
+          provider: { '@id': personId },
+        },
+        {
+          '@type': 'FAQPage',
+          mainEntity: shopifyFaqs.map((item) => ({
+            '@type': 'Question',
+            name: item.question,
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: item.answer,
+            },
+          })),
+        },
+        breadcrumbNode(crumbs),
+      ],
+    };
+  }
   if (page.path === '/' || roleCrumb(stripSlash(page.path))) {
     return {
       '@context': 'https://schema.org',
@@ -358,8 +409,9 @@ export function renderHead(page: PageMeta) {
     <meta property="og:description" content="${escapeHtml(page.description)}" />
     <meta property="og:url" content="${canonical}" />
     <meta property="og:image" content="${shareImage}" />
-    <meta property="og:image:width" content="1088" />
-    <meta property="og:image:height" content="1445" />
+    <meta property="og:image:alt" content="${escapeHtml(profile.name)}, mobile app developer and digital marketer in Dubai" />
+    <meta property="og:image:width" content="${shareWidth}" />
+    <meta property="og:image:height" content="${shareHeight}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escapeHtml(page.title)}" />
     <meta name="twitter:description" content="${escapeHtml(page.description)}" />

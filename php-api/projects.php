@@ -28,7 +28,7 @@ if ($action === 'delete') {
     $id = api_slug((string) ($body['id'] ?? ''));
     $statement = $db->prepare('DELETE FROM projects WHERE id = ?');
     $statement->execute([$id]);
-    api_prune_project_images($id, null);
+    api_prune_project_images($id, []);
     api_ok();
 }
 
@@ -86,11 +86,25 @@ $audiences = array_values(array_filter(
     fn($audience) => in_array($audience, ['home', 'flutter', 'fullstack', 'marketing'], true)
 ));
 $screenshot = api_screenshot_in($item['screenshot'] ?? null);
+api_ensure_views_column();
+$existing = $db->prepare('SELECT views FROM projects WHERE id = ?');
+$existing->execute([$id]);
+$previousViews = $existing->fetchColumn();
+$views = array_key_exists('views', $item) ? api_views_in($item['views']) : api_views_out(is_string($previousViews) ? $previousViews : null);
+$keepSrcs = [];
+if ($screenshot) {
+    $keepSrcs[] = $screenshot['src'];
+}
+foreach ($views as $view) {
+    foreach ($view['shots'] as $shot) {
+        $keepSrcs[] = $shot['src'];
+    }
+}
 
 $statement = $db->prepare(
     'INSERT INTO projects
-      (id, status, title, summary, product_type, engagement, contribution_kind, contribution, technologies, tasks, problem, completed, links, featured, experience_id, also_types, audiences, screenshot)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (id, status, title, summary, product_type, engagement, contribution_kind, contribution, technologies, tasks, problem, completed, links, featured, experience_id, also_types, audiences, screenshot, views)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON DUPLICATE KEY UPDATE
       status = VALUES(status),
       title = VALUES(title),
@@ -108,7 +122,8 @@ $statement = $db->prepare(
       experience_id = VALUES(experience_id),
       also_types = VALUES(also_types),
       audiences = VALUES(audiences),
-      screenshot = VALUES(screenshot)'
+      screenshot = VALUES(screenshot),
+      views = VALUES(views)'
 );
 $statement->execute([
     $id,
@@ -129,7 +144,8 @@ $statement->execute([
     json_encode($alsoTypes, JSON_UNESCAPED_UNICODE),
     json_encode($audiences, JSON_UNESCAPED_UNICODE),
     $screenshot === null ? null : json_encode($screenshot, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+    json_encode($views, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
 ]);
 
-api_prune_project_images($id, $screenshot === null ? null : $screenshot['src']);
+api_prune_project_images($id, $keepSrcs);
 api_ok(['id' => $id]);

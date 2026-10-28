@@ -5,7 +5,9 @@ import type {
   MonthPoint,
   ProductType,
   ProjectItem,
+  ProjectLink,
   ProjectShot,
+  ProjectView,
   SkillCategory,
   SkillItem,
   SkillOutline,
@@ -152,8 +154,13 @@ const projects: StoredProject[] = [
       'Managed Android and iOS releases, maintenance, and ongoing updates.',
     ],
     links: [{ label: 'PropTelli website', href: 'https://proptelli.com/' }],
+    views: [
+      { type: 'mobile-app', label: 'Mobile app', shots: [], links: [] },
+      { type: 'website', label: 'Website', shots: [], links: [{ label: 'PropTelli website', href: 'https://proptelli.com/' }] },
+    ],
     featured: true,
     experienceId: 'exp-casakey',
+    alsoTypes: ['website'],
     audiences: ['home', 'flutter'],
   },
   {
@@ -173,19 +180,26 @@ const projects: StoredProject[] = [
     status: 'public',
     id: 'choosemyfresh',
     title: 'ChooseMy Fresh',
-    summary: 'Website, social media, and website SEO for ChooseMy Fresh.',
+    summary: 'Mobile app, CRM, website, social media, and website SEO for ChooseMy Fresh.',
     productType: 'marketing',
-    alsoTypes: ['website'],
-    contribution: 'Created the ChooseMy Fresh website, managed its social media platforms, and worked on its website SEO.',
+    alsoTypes: ['mobile-app', 'dashboard', 'website'],
+    contribution: 'Worked on the ChooseMy Fresh mobile app and CRM, created the website, managed its social media platforms, and worked on its website SEO.',
     technologies: [],
     tasks: [
+      'Worked on the ChooseMy Fresh mobile app.',
+      'Worked on the ChooseMy Fresh CRM.',
       'Created the ChooseMy Fresh website.',
       'Managed its social media platforms.',
       'Worked on its website SEO.',
     ],
     links: [],
+    views: [
+      { type: 'mobile-app', label: 'Mobile app', shots: [], links: [] },
+      { type: 'dashboard', label: 'CRM', shots: [], links: [] },
+      { type: 'website', label: 'Website', shots: [], links: [] },
+    ],
     featured: true,
-    audiences: ['home', 'marketing', 'fullstack'],
+    audiences: ['home', 'marketing', 'fullstack', 'flutter'],
   },
   {
     status: 'public',
@@ -635,19 +649,20 @@ export function formatPeriod(item: { start: MonthPoint; end?: MonthPoint }) {
   return `${start} – ${formatMonth(item.end)}`;
 }
 
-function eachMonth(start: MonthPoint, end: MonthPoint) {
-  const keys: string[] = [];
-  let year = start.year;
-  let month = start.month;
-  while (monthIndex({ year, month }) <= monthIndex(end)) {
-    keys.push(`${year}-${String(month).padStart(2, '0')}`);
-    month += 1;
-    if (month === 13) {
-      month = 1;
-      year += 1;
-    }
+function mergeClosedRoles(jobs: ExperienceItem[]) {
+  const spans = jobs
+    .filter((job): job is ExperienceItem & { end: MonthPoint } => Boolean(job.end))
+    .map((job) => ({ start: monthIndex(job.start), end: monthIndex(job.end) }))
+    .sort((a, b) => a.start - b.start);
+  const merged: { start: number; end: number }[] = [];
+  for (const span of spans) {
+    const last = merged[merged.length - 1];
+    if (!last || span.start > last.end) merged.push({ ...span });
+    else last.end = Math.max(last.end, span.end);
   }
-  return keys;
+  const listed = spans.reduce((sum, span) => sum + (span.end - span.start + 1), 0);
+  const months = merged.reduce((sum, span) => sum + (span.end - span.start + 1), 0);
+  return { months, overlap: listed - months };
 }
 
 function formatDuration(months: number) {
@@ -660,38 +675,51 @@ function formatDuration(months: number) {
   return monthLabel;
 }
 
+function asOfMonth(): MonthPoint {
+  const now = new Date();
+  return { year: now.getFullYear(), month: now.getMonth() + 1 };
+}
+
+/** Employment through the given month. An open role runs through that month. Shared months count once. Training is not included. */
+function employmentMonths(jobs: ExperienceItem[], through: MonthPoint) {
+  const limit = monthIndex(through);
+  const spans = jobs
+    .map((job) => {
+      const start = monthIndex(job.start);
+      const end = Math.min(job.end ? monthIndex(job.end) : limit, limit);
+      if (start > limit || end < start) return null;
+      return { start, end };
+    })
+    .filter((span): span is { start: number; end: number } => Boolean(span))
+    .sort((a, b) => a.start - b.start);
+  const merged: { start: number; end: number }[] = [];
+  for (const span of spans) {
+    const last = merged[merged.length - 1];
+    if (!last || span.start > last.end) merged.push({ ...span });
+    else last.end = Math.max(last.end, span.end);
+  }
+  return merged.reduce((sum, span) => sum + (span.end - span.start + 1), 0);
+}
+
 /** Closed employment months, with any shared month counted once. Training is not included. */
 export function confirmedEmployment() {
-  const counted = new Set<string>();
   const included: ExperienceItem[] = [];
   const open: ExperienceItem[] = [];
   for (const job of experienceSource()) {
-    if (!job.end) {
-      open.push(job);
-      continue;
-    }
-    included.push(job);
-    for (const key of eachMonth(job.start, job.end)) counted.add(key);
+    if (!job.end) open.push(job);
+    else included.push(job);
   }
-  const months = counted.size;
+  const { months } = mergeClosedRoles(included);
   return { months, label: formatDuration(months), included, open };
 }
 
 export function employmentSummary() {
-  const record = confirmedEmployment();
-  const ranges = [...record.included]
-    .sort((a, b) => monthIndex(a.start) - monthIndex(b.start))
-    .map((job) => `${job.company} (${formatPeriod(job)})`)
-    .join('; ');
-  const open = record.open
-    .map((job) => `${job.company} is the current role, from ${formatMonth(job.start)}`)
-    .join('. ');
-  const trainingNote = training.length ? ' Training sits in its own section, outside this total.' : '';
-  const openNote = open ? ` ${open}.` : '';
+  const through = asOfMonth();
+  const months = employmentMonths(experienceSource(), through);
   return {
-    months: record.months,
-    label: record.label,
-    detail: `Counted from ${ranges}. Overlapping months are counted once.${openNote}${trainingNote}`,
+    months,
+    label: formatDuration(months),
+    detail: `Through ${formatMonth(through)}, including the current role. Training is not included.`,
   };
 }
 
@@ -709,6 +737,32 @@ function projectSource() {
 function stringList(value: unknown) {
   if (!Array.isArray(value)) return [];
   return value.filter((item): item is string => typeof item === 'string').map((item) => item.trim()).filter(Boolean);
+}
+
+const productTypes = new Set<ProductType>(['mobile-app', 'website', 'dashboard', 'marketing']);
+
+function projectLink(value: unknown): ProjectLink | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  const link = value as { label?: unknown; href?: unknown };
+  if (typeof link.label !== 'string' || typeof link.href !== 'string') return undefined;
+  const label = link.label.trim();
+  const href = link.href.trim();
+  if (!label || !/^https?:\/\//.test(href)) return undefined;
+  return { label, href };
+}
+
+function projectViewsFromUnknown(value: unknown): ProjectView[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const views = value.flatMap((item) => {
+    if (!item || typeof item !== 'object') return [];
+    const view = item as { type?: unknown; label?: unknown; shots?: unknown; links?: unknown };
+    if (typeof view.type !== 'string' || !productTypes.has(view.type as ProductType)) return [];
+    const label = typeof view.label === 'string' && view.label.trim() ? view.label.trim() : undefined;
+    const shots = Array.isArray(view.shots) ? view.shots.flatMap((shot) => projectShot(shot) ?? []) : [];
+    const links = Array.isArray(view.links) ? view.links.flatMap((link) => projectLink(link) ?? []) : [];
+    return [{ type: view.type as ProductType, ...(label ? { label } : {}), shots, links }];
+  });
+  return views.length ? views : undefined;
 }
 
 function projectShot(value: unknown): ProjectShot | undefined {
@@ -758,20 +812,60 @@ export function applyRemotePortfolio(data: { experiences?: unknown; projects?: u
     if (!item || typeof item !== 'object') return [];
     const project = item as StoredProject;
     if (!project.id || !project.title || !project.summary || !project.productType) return [];
-    const links = Array.isArray(project.links)
-      ? project.links.filter((link) => link && typeof link.label === 'string' && typeof link.href === 'string')
-      : [];
+    const links = Array.isArray(project.links) ? project.links.flatMap((link) => projectLink(link) ?? []) : [];
     const screenshot = projectShot(project.screenshot);
+    const local = projects.find((item) => item.id === project.id);
+    const remoteViews = projectViewsFromUnknown(project.views);
+    const views = placeLegacyShot(remoteViews ?? local?.views, screenshot, project.productType);
+    const usingLocalViews = !remoteViews && Boolean(local?.views?.length);
+    const alsoTypes = [...new Set([
+      ...stringList(project.alsoTypes).filter((type): type is ProductType => productTypes.has(type as ProductType)),
+      ...(usingLocalViews ? local?.alsoTypes ?? [] : []),
+      ...(views ?? []).map((view) => view.type),
+    ])].filter((type) => type !== project.productType);
+    const audiences = [...new Set([
+      ...stringList(project.audiences),
+      ...(usingLocalViews ? local?.audiences ?? [] : []),
+    ])].filter((audience): audience is 'home' | 'flutter' | 'fullstack' | 'marketing' =>
+      audience === 'home' || audience === 'flutter' || audience === 'fullstack' || audience === 'marketing',
+    );
     return [{
       ...project,
       status: project.status === 'review' ? 'review' : 'public',
+      summary: usingLocalViews && local ? local.summary : project.summary,
+      contribution: usingLocalViews && local ? local.contribution : project.contribution,
       technologies: stringList(project.technologies),
-      tasks: stringList(project.tasks),
+      tasks: usingLocalViews && local ? local.tasks : stringList(project.tasks),
       links,
       featured: Boolean(project.featured),
       ...(screenshot ? { screenshot } : { screenshot: undefined }),
+      ...(views ? { views } : { views: undefined }),
+      ...(alsoTypes.length ? { alsoTypes } : { alsoTypes: undefined }),
+      ...(audiences.length ? { audiences } : { audiences: undefined }),
     }];
   });
+}
+
+function placeLegacyShot(views: ProjectView[] | undefined, shot: ProjectShot | undefined, primary: ProductType) {
+  if (!views?.length || !shot || views.some((view) => view.shots.some((item) => item.src === shot.src))) return views;
+  const preferred = views.findIndex((view) => view.type === primary && view.shots.length === 0);
+  const target = preferred >= 0 ? preferred : views.findIndex((view) => view.shots.length === 0);
+  if (target < 0) return views;
+  return views.map((view, index) => (index === target ? { ...view, shots: [shot] } : view));
+}
+
+export function projectViews(project: ProjectItem): ProjectView[] {
+  if (project.views?.length) return project.views;
+  const shot = project.screenshot ? [project.screenshot] : [];
+  return [{ type: project.productType, shots: shot, links: project.links }];
+}
+
+export function projectTypes(project: ProjectItem): ProductType[] {
+  return [...new Set([project.productType, ...(project.alsoTypes ?? []), ...projectViews(project).map((view) => view.type)])];
+}
+
+export function viewLabel(view: ProjectView) {
+  return view.label ?? productTypeLabel(view.type);
 }
 
 export function publicExperiences() {
@@ -795,16 +889,10 @@ export function findPublicProject(id: string) {
 export function projectMatchesSurface(project: ProjectItem, surface: 'home' | ContentRole) {
   if (surface === 'home') return true;
   if (project.audiences?.length) return project.audiences.includes(surface);
-  if (surface === 'flutter') return project.productType === 'mobile-app' || project.alsoTypes?.includes('mobile-app');
-  if (surface === 'fullstack') {
-    return (
-      project.productType === 'website' ||
-      project.productType === 'dashboard' ||
-      project.alsoTypes?.includes('website') ||
-      project.alsoTypes?.includes('dashboard')
-    );
-  }
-  return project.productType === 'marketing' || project.alsoTypes?.includes('marketing');
+  const types = projectTypes(project);
+  if (surface === 'flutter') return types.includes('mobile-app');
+  if (surface === 'fullstack') return types.includes('website') || types.includes('dashboard');
+  return types.includes('marketing');
 }
 
 export function projectsForRole(role: ContentRole) {
@@ -871,7 +959,7 @@ Email: ${profile.email}
 Website: ${profile.url}
 Education: ${education.map((item) => `${item.credential}, ${item.school}, ${item.period}`).join('. ')}
 
-Confirmed employment length: ${summary.label}. ${summary.detail}
+Employment length: ${summary.label}. ${summary.detail}
 
 Work (employment only):
 ${jobs}
@@ -882,5 +970,5 @@ ${courses}
 Projects:
 ${work}
 
-ULEGENDARY DIGITAL is the current role, from January 2026, shown as Present. Do not say the mobile work there used Flutter. Do not describe Luminar Technohub as a job, and do not attach production apps or shared component libraries to that course. SLR SHOPPEE PVT LTD covers a Flutter ecommerce application using GetX and Provider. Do not add responsibilities beyond those bullets. Do not claim SEO rankings, download numbers, revenue, team leadership, or testimonials. ChooseMy Fresh website SEO is limited to the tasks listed for that project. Do not describe Pranav as a student or beginner.`;
+ULEGENDARY DIGITAL is the current role, from January 2026, shown as Present. Do not say the mobile work there used Flutter. Do not describe Luminar Technohub as a job, and do not attach production apps or shared component libraries to that course. SLR SHOPPEE PVT LTD covers a Flutter ecommerce application using GetX and Provider. Do not add responsibilities beyond those bullets. Do not claim SEO rankings, download numbers, revenue, team leadership, or testimonials. ChooseMy Fresh includes the mobile app, the CRM, the website, social media, and website SEO. Do not invent a store link, a CRM URL, screenshots, or SEO rankings for it. Do not describe Pranav as a student or beginner.`;
 }

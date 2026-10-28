@@ -448,6 +448,34 @@ class _ExperienceEditorState extends State<ExperienceEditor> {
   }
 }
 
+class _ProofDraft {
+  _ProofDraft({
+    required this.type,
+    String label = '',
+    String links = '',
+    this.shot,
+  })  : label = TextEditingController(text: label),
+        links = TextEditingController(text: links);
+
+  final String type;
+  final TextEditingController label;
+  final TextEditingController links;
+  ProjectShot? shot;
+  String? localPath;
+
+  void dispose() {
+    label.dispose();
+    links.dispose();
+  }
+}
+
+const _partLabels = {
+  'mobile-app': 'Mobile app',
+  'website': 'Website',
+  'dashboard': 'CRM / dashboard',
+  'marketing': 'Marketing',
+};
+
 class ProjectEditor extends StatefulWidget {
   const ProjectEditor({super.key, required this.api, this.existing});
 
@@ -466,16 +494,13 @@ class _ProjectEditorState extends State<ProjectEditor> {
   late final TextEditingController _technologies;
   late final TextEditingController _tasks;
   late final TextEditingController _completed;
-  late final TextEditingController _links;
   late final TextEditingController _experienceId;
-  late final TextEditingController _alsoTypes;
   late final TextEditingController _audiences;
   late String _status;
   late String _productType;
   String? _engagement;
   String? _contributionKind;
-  ProjectShot? _shot;
-  String? _localPath;
+  late List<_ProofDraft> _views;
   var _featured = false;
   var _busy = false;
   String? _error;
@@ -491,31 +516,62 @@ class _ProjectEditorState extends State<ProjectEditor> {
     _technologies = TextEditingController(text: listToLines(project?.technologies ?? []));
     _tasks = TextEditingController(text: listToLines(project?.tasks ?? []));
     _completed = TextEditingController(text: project?.completed ?? '');
-    _links = TextEditingController(
-      text: (project?.links ?? []).map((link) => '${link.label} | ${link.href}').join('\n'),
-    );
     _experienceId = TextEditingController(text: project?.experienceId ?? '');
-    _alsoTypes = TextEditingController(text: listToLines(project?.alsoTypes ?? []));
     _audiences = TextEditingController(text: listToLines(project?.audiences ?? []));
     _status = project?.status ?? 'public';
-    _productType = project?.productType ?? 'mobile-app';
+    _productType = project != null && project.views.isNotEmpty ? project.views.first.type : (project?.productType ?? 'mobile-app');
     _engagement = project?.engagement;
     _contributionKind = project?.contributionKind;
-    final shot = project?.screenshot;
-    _shot = shot != null && shot.src.isNotEmpty ? shot : null;
+    _views = _draftsFor(project);
     _featured = project?.featured ?? false;
+  }
+
+  List<_ProofDraft> _draftsFor(ProjectItem? project) {
+    if (project != null && project.views.isNotEmpty) {
+      return project.views
+          .map(
+            (view) => _ProofDraft(
+              type: view.type,
+              label: view.label ?? '',
+              links: view.links.map((link) => '${link.label} | ${link.href}').join('\n'),
+              shot: view.shots.cast<ProjectShot?>().whereType<ProjectShot>().where((shot) => shot.src.isNotEmpty).firstOrNull,
+            ),
+          )
+          .toList();
+    }
+    final primary = project?.productType ?? _productType;
+    final ordered = <String>[];
+    for (final type in [primary, ...?project?.alsoTypes]) {
+      if (!ordered.contains(type)) ordered.add(type);
+    }
+    if (ordered.isEmpty) ordered.add(primary);
+    final linkText = (project?.links ?? []).map((link) => '${link.label} | ${link.href}').join('\n');
+    final hasWebsite = ordered.contains('website') || ordered.contains('dashboard');
+    final shot = project?.screenshot;
+    return ordered
+        .map(
+          (type) => _ProofDraft(
+            type: type,
+            shot: type == primary && shot != null && shot.src.isNotEmpty ? shot : null,
+            links: type == 'website' || type == 'dashboard' || (!hasWebsite && type == primary) ? linkText : '',
+          ),
+        )
+        .toList();
   }
 
   @override
   void dispose() {
-    for (final controller in [_id, _title, _summary, _contribution, _technologies, _tasks, _completed, _links, _experienceId, _alsoTypes, _audiences]) {
+    for (final controller in [_id, _title, _summary, _contribution, _technologies, _tasks, _completed, _experienceId, _audiences]) {
       controller.dispose();
+    }
+    for (final view in _views) {
+      view.dispose();
     }
     super.dispose();
   }
 
-  List<ProjectLink> _parseLinks() {
-    return linesToList(_links.text).map((line) {
+  List<ProjectLink> _parseDraftLinks(String text) {
+    return linesToList(text).map((line) {
       final parts = line.split('|');
       return ProjectLink(
         label: parts.first.trim(),
@@ -524,7 +580,7 @@ class _ProjectEditorState extends State<ProjectEditor> {
     }).where((link) => link.label.isNotEmpty && link.href.isNotEmpty).toList();
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _pickImage(_ProofDraft draft) async {
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       builder: (context) => SafeArea(
@@ -550,7 +606,7 @@ class _ProjectEditorState extends State<ProjectEditor> {
       final file = await ImagePicker().pickImage(source: source, maxWidth: 2000, imageQuality: 85);
       if (file == null || !mounted) return;
       setState(() {
-        _localPath = file.path;
+        draft.localPath = file.path;
         _error = null;
       });
     } on PlatformException {
@@ -559,15 +615,40 @@ class _ProjectEditorState extends State<ProjectEditor> {
     }
   }
 
-  void _clearImage() {
+  void _clearImage(_ProofDraft draft) {
     setState(() {
-      _localPath = null;
-      _shot = null;
+      draft.localPath = null;
+      draft.shot = null;
+    });
+  }
+
+  void _setPrimary(String type) {
+    setState(() {
+      _productType = type;
+      final current = _views.where((view) => view.type == type).toList();
+      final rest = _views.where((view) => view.type != type).toList();
+      _views = current.isEmpty ? [_ProofDraft(type: type), ...rest] : [...current, ...rest];
+    });
+  }
+
+  void _togglePart(String type, bool selected) {
+    if (type == _productType) return;
+    setState(() {
+      if (selected) {
+        if (_views.every((view) => view.type != type)) {
+          _views = [..._views, _ProofDraft(type: type)];
+        }
+      } else {
+        for (final view in _views.where((view) => view.type == type)) {
+          view.dispose();
+        }
+        _views = _views.where((view) => view.type != type).toList();
+      }
     });
   }
 
   Future<void> _save() async {
-    if (_localPath != null && _id.text.trim().isEmpty) {
+    if (_views.any((view) => view.localPath != null) && _id.text.trim().isEmpty) {
       setState(() => _error = 'Enter an id before adding an image.');
       return;
     }
@@ -576,40 +657,55 @@ class _ProjectEditorState extends State<ProjectEditor> {
       _error = null;
     });
     try {
-      if (_localPath != null) {
-        _shot = await widget.api.uploadProjectImage(
+      for (final view in _views) {
+        final path = view.localPath;
+        if (path == null) continue;
+        view.shot = await widget.api.uploadProjectImage(
           projectId: _id.text.trim(),
-          filePath: _localPath!,
+          filePath: path,
           alt: _title.text.trim(),
         );
-        _localPath = null;
+        view.localPath = null;
       }
-      final shot = _shot;
+      final title = _title.text.trim();
+      final views = _views.map((view) {
+        final shot = view.shot;
+        return ProjectView(
+          type: view.type,
+          label: view.label.text.trim(),
+          shots: shot == null || shot.src.isEmpty
+              ? const []
+              : [
+                  ProjectShot(
+                    src: shot.src,
+                    alt: title.isEmpty ? 'Project screenshot' : title,
+                    width: shot.width,
+                    height: shot.height,
+                  ),
+                ],
+          links: _parseDraftLinks(view.links.text),
+        );
+      }).toList();
+      final firstShot = views.expand((view) => view.shots).firstOrNull;
       final item = ProjectItem(
         id: _id.text.trim(),
         status: _status,
-        title: _title.text.trim(),
+        title: title,
         summary: _summary.text.trim(),
-        productType: _productType,
+        productType: views.isEmpty ? _productType : views.first.type,
         engagement: _engagement,
         contributionKind: _contributionKind,
         contribution: _contribution.text.trim(),
         technologies: linesToList(_technologies.text),
         tasks: linesToList(_tasks.text),
         completed: _completed.text.trim(),
-        links: _parseLinks(),
-        screenshot: shot == null || shot.src.isEmpty
-            ? null
-            : ProjectShot(
-                src: shot.src,
-                alt: _title.text.trim().isEmpty ? 'Project screenshot' : _title.text.trim(),
-                width: shot.width,
-                height: shot.height,
-              ),
+        links: views.expand((view) => view.links).toList(),
+        screenshot: firstShot,
         featured: _featured,
         experienceId: _experienceId.text.trim(),
-        alsoTypes: linesToList(_alsoTypes.text),
+        alsoTypes: views.skip(1).map((view) => view.type).toList(),
         audiences: linesToList(_audiences.text),
+        views: views,
       );
       await widget.api.saveProject(item);
       if (!mounted) return;
@@ -657,7 +753,6 @@ class _ProjectEditorState extends State<ProjectEditor> {
           _field(_id, 'Id', enabled: widget.existing == null),
           _field(_title, 'Title'),
           _field(_summary, 'Summary', lines: 3),
-          _imageField(),
           DropdownButtonFormField<String>(
             initialValue: _status,
             decoration: const InputDecoration(labelText: 'Visibility', border: OutlineInputBorder()),
@@ -677,8 +772,29 @@ class _ProjectEditorState extends State<ProjectEditor> {
               DropdownMenuItem(value: 'dashboard', child: Text('Dashboard')),
               DropdownMenuItem(value: 'marketing', child: Text('Marketing')),
             ],
-            onChanged: (value) => setState(() => _productType = value ?? 'mobile-app'),
+            onChanged: (value) => _setPrimary(value ?? 'mobile-app'),
           ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            children: _partLabels.entries
+                .map(
+                  (entry) => FilterChip(
+                    label: Text(entry.value),
+                    selected: _views.any((view) => view.type == entry.key),
+                    onSelected: entry.key == _productType ? null : (selected) => _togglePart(entry.key, selected),
+                  ),
+                )
+                .toList(),
+          ),
+          const SizedBox(height: 12),
+          for (final view in _views) ...[
+            Text(_partLabels[view.type] ?? view.type, style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            _field(view.label, 'Label on the site, for example CRM'),
+            _imageField(view),
+            _field(view.links, 'Links, one per line as Label | https://…', lines: 3),
+          ],
           const SizedBox(height: 12),
           DropdownButtonFormField<String?>(
             initialValue: _engagement,
@@ -707,9 +823,7 @@ class _ProjectEditorState extends State<ProjectEditor> {
           _field(_tasks, 'Tasks, one per line', lines: 5),
           _field(_technologies, 'Technologies, one per line', lines: 3),
           _field(_completed, 'Completed outcome', lines: 2),
-          _field(_links, 'Links, one per line as Label | https://…', lines: 3),
           _field(_experienceId, 'Job id'),
-          _field(_alsoTypes, 'Extra types, one per line', lines: 2),
           _field(_audiences, 'Audiences, one per line', lines: 2),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
@@ -726,9 +840,9 @@ class _ProjectEditorState extends State<ProjectEditor> {
     );
   }
 
-  Widget _imageField() {
-    final localPath = _localPath;
-    final remote = _shot?.src;
+  Widget _imageField(_ProofDraft draft) {
+    final localPath = draft.localPath;
+    final remote = draft.shot?.src;
     final hasImage = localPath != null || (remote != null && remote.isNotEmpty);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -757,15 +871,15 @@ class _ProjectEditorState extends State<ProjectEditor> {
             )
           else
             OutlinedButton.icon(
-              onPressed: _busy ? null : _pickImage,
+              onPressed: _busy ? null : () => _pickImage(draft),
               icon: const Icon(Icons.image_outlined),
-              label: const Text('Add image'),
+              label: const Text('Add screenshot'),
             ),
           if (hasImage)
             Row(
               children: [
-                TextButton(onPressed: _busy ? null : _pickImage, child: const Text('Change image')),
-                TextButton(onPressed: _busy ? null : _clearImage, child: const Text('Remove')),
+                TextButton(onPressed: _busy ? null : () => _pickImage(draft), child: const Text('Change image')),
+                TextButton(onPressed: _busy ? null : () => _clearImage(draft), child: const Text('Remove')),
               ],
             ),
         ],

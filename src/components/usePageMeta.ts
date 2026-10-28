@@ -47,11 +47,14 @@ export function usePageMeta(pathname: string, ready = false) {
     upsertMeta('property', 'og:title', page.title);
     upsertMeta('property', 'og:description', page.description);
     upsertMeta('property', 'og:url', url);
-    upsertMeta('property', 'og:image', `${SITE_URL}/og-portrait.jpg`);
+    upsertMeta('property', 'og:image', `${SITE_URL}/og-share.jpg`);
+    upsertMeta('property', 'og:image:alt', `${profile.name}, mobile app developer and digital marketer in Dubai`);
+    upsertMeta('property', 'og:image:width', '1200');
+    upsertMeta('property', 'og:image:height', '630');
     upsertMeta('name', 'twitter:card', 'summary_large_image');
     upsertMeta('name', 'twitter:title', page.title);
     upsertMeta('name', 'twitter:description', page.description);
-    upsertMeta('name', 'twitter:image', `${SITE_URL}/og-portrait.jpg`);
+    upsertMeta('name', 'twitter:image', `${SITE_URL}/og-share.jpg`);
 
     let script = document.getElementById('page-jsonld');
     if (!script) {

@@ -1,5 +1,6 @@
 Options -Indexes
 RewriteEngine On
+RewriteRule ^contact/?$ contact.php [L]
 RewriteCond %{HTTP:Authorization} .
 RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 

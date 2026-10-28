@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
+import * as m from 'motion/react-m';
 import { projectPath, profile } from '../data/siteContent';
 import { ROLE_ROUTES } from '../routes';
 import { entranceInitial } from './entrance';
@@ -41,7 +41,7 @@ export default function AboutMe({ variant = 'home' }: { variant?: 'home' | 'flut
       className="relative z-10 scroll-mt-24 border-t border-white/10 bg-black"
     >
       <div className="mx-auto max-w-3xl px-6 py-20 lg:px-8 lg:py-24">
-        <motion.header
+        <m.header
           className="about-reveal"
           initial={entranceInitial(reduced, { opacity: 0, y: 20 })}
           whileInView={{ opacity: 1, y: 0 }}
@@ -73,9 +73,9 @@ export default function AboutMe({ variant = 'home' }: { variant?: 'home' | 'flut
               </>
             )}
           </h2>
-        </motion.header>
+        </m.header>
 
-        <motion.div
+        <m.div
           className="about-reveal mt-6 space-y-4 text-base leading-relaxed text-[#a7b5c5] sm:text-lg"
           initial={entranceInitial(reduced, { opacity: 0, y: 16 })}
           whileInView={{ opacity: 1, y: 0 }}
@@ -143,10 +143,10 @@ export default function AboutMe({ variant = 'home' }: { variant?: 'home' | 'flut
               </p>
             </>
           )}
-        </motion.div>
+        </m.div>
 
         {variant === 'home' ? (
-          <motion.dl
+          <m.dl
             className="about-reveal mt-10 grid gap-4 sm:grid-cols-3"
             initial={entranceInitial(reduced, { opacity: 0, y: 16 })}
             whileInView={{ opacity: 1, y: 0 }}
@@ -159,7 +159,7 @@ export default function AboutMe({ variant = 'home' }: { variant?: 'home' | 'flut
                 <dd className="mt-2 whitespace-pre-line text-sm leading-snug text-white sm:text-[15px]">{fact.value}</dd>
               </div>
             ))}
-          </motion.dl>
+          </m.dl>
         ) : null}
       </div>
     </section>

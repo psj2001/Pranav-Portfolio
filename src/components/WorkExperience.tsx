@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
+import * as m from 'motion/react-m';
 import {
   employmentSummary,
   findPublicProject,
@@ -39,6 +39,22 @@ function projectFits(project: ProjectItem, focus: Focus) {
   return project.productType === 'marketing';
 }
 
+function englishList(items: string[]) {
+  if (items.length <= 1) return items[0] ?? '';
+  if (items.length === 2) return `${items[0]} or ${items[1]}`;
+  return `${items.slice(0, -1).join(', ')}, or ${items[items.length - 1]}`;
+}
+
+function QuietMarketingNote({ jobs }: { jobs: ReturnType<typeof publicExperiences> }) {
+  const quiet = jobs.filter((job) => ![...job.bullets, ...job.related].some((item) => bulletKind(item).marketing));
+  if (quiet.length === 0) return null;
+  return (
+    <p className="mt-6 text-sm leading-relaxed text-[#8ea0b0]">
+      No marketing deliverable is published for {englishList(quiet.map((job) => job.company))}.
+    </p>
+  );
+}
+
 function usePrefersReducedMotion() {
   const [reduced] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
@@ -57,7 +73,7 @@ export default function WorkExperience({ flutter = false, fullstack = false, mar
   return (
     <section id="experience" aria-labelledby="experience-heading" className="relative z-10 scroll-mt-24 border-t border-[#1a3038] bg-[#050b0e]">
       <div className="mx-auto max-w-4xl px-6 py-16 lg:px-8 lg:py-20">
-        <motion.header
+        <m.header
           className="max-w-3xl"
           initial={entranceInitial(reduced, { opacity: 0, y: 18 })}
           whileInView={{ opacity: 1, y: 0 }}
@@ -102,9 +118,9 @@ export default function WorkExperience({ flutter = false, fullstack = false, mar
               . I created the website, managed its social media platforms, and worked on its website SEO.
             </p>
           ) : null}
-        </motion.header>
+        </m.header>
 
-        <motion.div
+        <m.div
           className="mt-8 rounded-2xl border border-white/10 bg-[#07141c] p-5 sm:p-7"
           style={{ borderLeftWidth: 3, borderLeftColor: accent }}
           initial={entranceInitial(reduced, { opacity: 0, y: 16 })}
@@ -112,14 +128,15 @@ export default function WorkExperience({ flutter = false, fullstack = false, mar
           viewport={{ once: true, margin: '0px 0px -8% 0px' }}
           transition={{ duration: 0.45 }}
         >
-          <p className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${accentText}`}>Confirmed employment</p>
+          <p className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${accentText}`}>Experience</p>
           <p className="mt-2 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">{summary.label}</p>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#c5d2de] sm:text-base">{summary.detail}</p>
-        </motion.div>
+        </m.div>
+
+        {marketing ? <QuietMarketingNote jobs={jobs} /> : null}
 
         <ol className="mt-6 space-y-4">
           {jobs.map((job, index) => (
-            <motion.li
+            <m.li
               key={job.id}
               initial={entranceInitial(reduced, { opacity: 0, y: 16 })}
               whileInView={{ opacity: 1, y: 0 }}
@@ -159,8 +176,6 @@ export default function WorkExperience({ flutter = false, fullstack = false, mar
                             <li key={bullet}>{bullet}</li>
                           ))}
                         </ul>
-                      ) : focus === 'marketing' ? (
-                        <p className="mt-4 text-sm leading-relaxed text-[#8ea0b0]">No marketing deliverable is published for this role.</p>
                       ) : null}
                       {related.length > 0 ? (
                         <div className="mt-4">
@@ -223,7 +238,7 @@ export default function WorkExperience({ flutter = false, fullstack = false, mar
                   );
                 })()}
               </article>
-            </motion.li>
+            </m.li>
           ))}
         </ol>
       </div>

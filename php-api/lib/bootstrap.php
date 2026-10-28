@@ -233,6 +233,11 @@ function api_project_out(array $row): array
     if ($screenshot) {
         $item['screenshot'] = $screenshot;
     }
+    api_ensure_views_column();
+    $views = api_views_out($row['views'] ?? null);
+    if ($views) {
+        $item['views'] = $views;
+    }
     $also = api_decode_list($row['also_types']);
     if ($also) {
         $item['alsoTypes'] = $also;
@@ -277,6 +282,112 @@ function api_optional_text($value, int $max): ?string
         return null;
     }
     return mb_substr(trim($value), 0, $max);
+}
+
+function api_ensure_views_column(): void
+{
+    static $ready = false;
+    if ($ready) {
+        return;
+    }
+    $db = api_db();
+    $columns = $db->query("SHOW COLUMNS FROM projects LIKE 'views'")->fetchAll();
+    if (!$columns) {
+        try {
+            $db->exec('ALTER TABLE projects ADD COLUMN views LONGTEXT NULL');
+        } catch (PDOException $error) {
+            $columns = $db->query("SHOW COLUMNS FROM projects LIKE 'views'")->fetchAll();
+            if (!$columns) {
+                throw $error;
+            }
+        }
+    }
+    $ready = true;
+}
+
+function api_views_out($value): array
+{
+    if (!is_string($value) || $value === '') {
+        return [];
+    }
+    $decoded = json_decode($value, true);
+    if (!is_array($decoded)) {
+        return [];
+    }
+    $views = [];
+    foreach ($decoded as $view) {
+        if (!is_array($view) || !in_array($view['type'] ?? '', ['mobile-app', 'website', 'dashboard', 'marketing'], true)) {
+            continue;
+        }
+        $shots = [];
+        foreach (is_array($view['shots'] ?? null) ? $view['shots'] : [] as $shot) {
+            $parsed = api_screenshot_out(json_encode($shot));
+            if ($parsed) {
+                $shots[] = $parsed;
+            }
+        }
+        $links = [];
+        foreach (is_array($view['links'] ?? null) ? $view['links'] : [] as $link) {
+            if (!is_array($link)) {
+                continue;
+            }
+            $label = trim((string) ($link['label'] ?? ''));
+            $href = trim((string) ($link['href'] ?? ''));
+            if ($label !== '' && $href !== '') {
+                $links[] = ['label' => $label, 'href' => $href];
+            }
+        }
+        $item = [
+            'type' => $view['type'],
+            'shots' => $shots,
+            'links' => $links,
+        ];
+        $label = trim((string) ($view['label'] ?? ''));
+        if ($label !== '') {
+            $item['label'] = mb_substr($label, 0, 40);
+        }
+        $views[] = $item;
+    }
+    return $views;
+}
+
+function api_views_in($value): array
+{
+    if (!is_array($value)) {
+        api_fail(400, 'Project parts are not valid.');
+    }
+    $views = [];
+    foreach ($value as $view) {
+        if (!is_array($view)) {
+            continue;
+        }
+        $type = api_one_of((string) ($view['type'] ?? ''), ['mobile-app', 'website', 'dashboard', 'marketing'], 'Project part');
+        $shots = [];
+        foreach (is_array($view['shots'] ?? null) ? $view['shots'] : [] as $shot) {
+            $parsed = api_screenshot_in($shot);
+            if ($parsed) {
+                $shots[] = $parsed;
+            }
+        }
+        $links = [];
+        foreach (is_array($view['links'] ?? null) ? $view['links'] : [] as $link) {
+            if (!is_array($link)) {
+                continue;
+            }
+            $label = trim((string) ($link['label'] ?? ''));
+            $href = trim((string) ($link['href'] ?? ''));
+            if ($label !== '' && $href !== '') {
+                $links[] = ['label' => mb_substr($label, 0, 120), 'href' => mb_substr($href, 0, 500)];
+            }
+        }
+        $item = ['type' => $type, 'shots' => $shots, 'links' => $links];
+        $label = api_optional_text($view['label'] ?? null, 40);
+        if ($label !== null) {
+            $item['label'] = $label;
+        }
+        $views[] = $item;
+    }
+    return $views;
 }
 
 function api_ensure_screenshot_column(): void
@@ -632,19 +743,22 @@ function api_prune_post_images(string $track, string $slug, array $keepSrcs): vo
     }
 }
 
-function api_prune_project_images(string $id, ?string $keepSrc): void
+function api_prune_project_images(string $id, array $keepSrcs): void
 {
     $dir = api_projects_image_dir();
     if (!is_dir($dir)) {
         return;
     }
-    $keep = '';
-    if (is_string($keepSrc)) {
-        $keep = basename((string) parse_url($keepSrc, PHP_URL_PATH));
+    $keep = [];
+    foreach ($keepSrcs as $src) {
+        $name = basename((string) parse_url((string) $src, PHP_URL_PATH));
+        if ($name !== '') {
+            $keep[$name] = true;
+        }
     }
     $pattern = '/^' . preg_quote($id, '/') . '-[a-f0-9]{8}\.(jpg|png|webp)$/';
     foreach (scandir($dir) ?: [] as $file) {
-        if (!preg_match($pattern, $file) || $file === $keep) {
+        if (!preg_match($pattern, $file) || isset($keep[$file])) {
             continue;
         }
         $path = $dir . '/' . $file;

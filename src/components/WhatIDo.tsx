@@ -1,8 +1,12 @@
 import { useLayoutEffect, useRef } from 'react';
 import { ArrowRight, AppWindow, Megaphone, Smartphone, Users } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { createTimeline, svg } from 'animejs';
+import { createTimeline } from 'animejs/timeline';
+import { createDrawable } from 'animejs/svg';
+import { siShopify } from 'simple-icons';
+import { SHOPIFY_ROUTE } from '../routes';
 import { shouldPlayEntrance } from './entrance';
+import RouteLink from './RouteLink';
 import type { Timeline } from 'animejs';
 
 interface WhatIDoProps {
@@ -202,7 +206,7 @@ export default function WhatIDo({ onNavigate }: WhatIDoProps) {
         const route = linkBoxes(from, to);
         path.setAttribute('d', route.d);
         arrow.setAttribute('d', route.arrow);
-        const drawable = svg.createDrawable(path)[0];
+        const drawable = createDrawable(path)[0];
         drawable?.setAttribute('draw', visible ? '0 1' : '0 0');
         arrow.style.opacity = visible ? '1' : '0';
       }
@@ -250,7 +254,7 @@ export default function WhatIDo({ onNavigate }: WhatIDoProps) {
         return;
       }
 
-      const drawables = paths.map((path) => svg.createDrawable(path)[0]).filter(Boolean);
+      const drawables = paths.map((path) => createDrawable(path)[0]).filter(Boolean);
       const tl = createTimeline({ defaults: { ease: 'outCubic' } });
       tl.add(intro, { opacity: [0, 1], y: [20, 0], duration: 500 }, 0);
       tl.add(cards[0], { opacity: [0, 1], y: [18, 0], duration: 440 }, 260);
@@ -328,6 +332,7 @@ export default function WhatIDo({ onNavigate }: WhatIDoProps) {
   }, []);
 
   return (
+    <>
     <section
       id="what-i-do"
       ref={sectionRef}
@@ -350,7 +355,7 @@ export default function WhatIDo({ onNavigate }: WhatIDoProps) {
             I build your <span className="text-[#00e5e5]">digital presence.</span>
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#a7b5c5] sm:text-lg">
-            Websites, apps, dashboards, and digital marketing.
+            Websites, apps, dashboards, digital marketing, and Shopify.
           </p>
         </div>
 
@@ -443,5 +448,34 @@ export default function WhatIDo({ onNavigate }: WhatIDoProps) {
         </div>
       </div>
     </section>
+
+    <section aria-labelledby="shopify-heading" className="relative z-10 border-t border-white/10 bg-black">
+      <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 py-20 md:grid-cols-[auto_minmax(0,42rem)] md:justify-center md:gap-20 lg:px-8 lg:py-24">
+        <svg role="img" aria-label="Shopify" viewBox="0 0 24 24" className="h-28 w-28 fill-white sm:h-36 sm:w-36 md:h-44 md:w-44">
+          <path d={siShopify.path} />
+        </svg>
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#00e5e5] sm:text-xs">
+            Shopify
+          </p>
+          <h2
+            id="shopify-heading"
+            className="mt-4 text-[2rem] font-extrabold leading-[1.08] tracking-[-0.03em] text-white sm:text-5xl"
+          >
+            Shopify websites and <span className="text-[#00e5e5]">mobile apps.</span>
+          </h2>
+          <p className="mt-6 text-base leading-relaxed text-[#a7b5c5] sm:text-lg">
+            I build a Shopify store: theme, pages, products, and the updates after it goes live. I also turn an existing Shopify store into an iOS and Android app. The shop stays on Shopify.
+          </p>
+          <RouteLink
+            href={SHOPIFY_ROUTE.path}
+            className="mt-8 inline-flex min-h-11 items-center justify-center rounded-full bg-[#00e5e5] px-5 text-sm font-semibold text-[#04181c] hover:bg-[#7af6f6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            See details
+          </RouteLink>
+        </div>
+      </div>
+    </section>
+    </>
   );
 }

@@ -37,12 +37,12 @@ export default function RolePage({ role }: { role: RoleId }) {
               ? {
                   kicker: 'Websites and dashboards',
                   title: 'Web work I can describe.',
-                  body: 'Dashboards and websites I can describe, including the ChooseMy Fresh website. The stack is limited to what the project record supports.',
+                  body: 'Dashboards and websites I can describe, including the ChooseMy Fresh website and CRM. The stack is limited to what the project record supports.',
                 }
               : {
                   kicker: 'Marketing work',
                   title: 'ChooseMy Fresh.',
-                  body: 'I created the ChooseMy Fresh website, managed its social media platforms, and worked on its website SEO. I also work on social content, SEO, Meta Ads, Google Ads, and WhatsApp automation.',
+                  body: 'For ChooseMy Fresh I worked on the mobile app and the CRM, created the website, managed its social media platforms, and worked on its website SEO. I also work on social content, SEO, Meta Ads, Google Ads, and WhatsApp automation.',
                 }
         }
       />

@@ -1,8 +1,8 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { motion } from 'motion/react';
-import { animate, svg } from 'animejs';
-import portrait from '../portfolio-hero-assets/pranav-portrait.webp';
+import * as m from 'motion/react-m';
+import { animate } from 'animejs/animation';
+import { createDrawable } from 'animejs/svg';
 import flutterIcon from '../portfolio-hero-assets/flutter-icon.svg';
 import fullStackIcon from '../portfolio-hero-assets/full-stack-icon.svg';
 import marketingIcon from '../portfolio-hero-assets/digital-marketing-icon.svg';
@@ -68,10 +68,10 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
     const rule = ruleRef.current;
     if (!rule) return;
     if (reduced) {
-      svg.createDrawable(rule)[0]?.setAttribute('draw', '0 1');
+      createDrawable(rule)[0]?.setAttribute('draw', '0 1');
       return;
     }
-    const drawable = svg.createDrawable(rule)[0];
+    const drawable = createDrawable(rule)[0];
     if (drawable) drawable.setAttribute('draw', '0 0');
     const ruleDraw = drawable
       ? animate(drawable, {
@@ -110,7 +110,7 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
                 />
               </div>
             ) : null}
-            <motion.p
+            <m.p
               className="hero-reveal text-[11px] font-semibold uppercase tracking-[0.22em] text-[#a7b5c5] sm:text-xs"
               initial={entranceInitial(reduced, { opacity: 0, y: 18 })}
               animate={{ opacity: 1, y: 0 }}
@@ -123,9 +123,9 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
                   : marketing
                     ? 'Digital marketing and websites'
                     : 'Developer & Digital Marketer'}
-            </motion.p>
+            </m.p>
 
-            <motion.h1
+            <m.h1
               className="hero-reveal mt-5 font-sans text-[clamp(2.7rem,4.5vw,4.35rem)] font-extrabold leading-[0.96] tracking-[-0.035em] text-white"
               initial={entranceInitial(reduced, { opacity: 0, y: 18 })}
               animate={{ opacity: 1, y: 0 }}
@@ -164,9 +164,9 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
                   <span className="text-[#00e5e5]">Grow brands.</span>
                 </>
               )}
-            </motion.h1>
+            </m.h1>
 
-            <motion.p
+            <m.p
               className="hero-reveal mt-6 max-w-md text-base leading-relaxed text-[#a7b5c5] sm:text-[17px]"
               initial={entranceInitial(reduced, { opacity: 0, y: 16 })}
               animate={{ opacity: 1, y: 0 }}
@@ -179,9 +179,9 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
                   : marketing
                     ? 'I’m Pranav P S. I work on social content and website updates, and I can change the pages that support that work.'
                     : 'Hi, I’m Pranav P S. I build mobile apps and websites, and I work on the digital marketing around them.'}
-            </motion.p>
+            </m.p>
 
-            <motion.div
+            <m.div
               className="hero-reveal mt-8 flex flex-col gap-3 sm:flex-row sm:items-center"
               initial={entranceInitial(reduced, { opacity: 0, y: 16 })}
               animate={{ opacity: 1, y: 0 }}
@@ -235,10 +235,10 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
                 Get in touch
                 <ArrowRight size={18} />
               </button>
-            </motion.div>
+            </m.div>
           </div>
 
-          <motion.div
+          <m.div
             className="hero-reveal relative mx-auto w-full max-w-[520px] lg:mx-0 lg:ml-auto lg:max-w-[500px] lg:mr-16"
             initial={entranceInitial(reduced, { opacity: 0, y: 20 })}
             animate={{ opacity: 1, y: 0 }}
@@ -257,15 +257,28 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
                       : 'radial-gradient(circle, rgba(0,229,229,0.7) 0%, rgba(0,214,218,0.48) 36%, rgba(0,190,200,0.18) 58%, transparent 74%)',
               }}
             />
-            <img
-              src={portrait}
-              alt="Portrait of Pranav P S"
-              width={1088}
-              height={1445}
-              fetchPriority="high"
-              decoding="async"
-              className="relative z-10 w-full object-contain"
-            />
+            <picture className="relative z-10 block w-full">
+              <source
+                type="image/avif"
+                srcSet="/images/pranav-portrait-640.avif 640w, /images/pranav-portrait-800.avif 800w, /images/pranav-portrait-1088.avif 1088w"
+                sizes="(min-width: 1024px) 500px, min(520px, calc(100vw - 3rem))"
+              />
+              <source
+                type="image/webp"
+                srcSet="/images/pranav-portrait-640.webp 640w, /images/pranav-portrait-800.webp 800w, /images/pranav-portrait-1088.webp 1088w"
+                sizes="(min-width: 1024px) 500px, min(520px, calc(100vw - 3rem))"
+              />
+              <img
+                src="/images/pranav-portrait-1088.webp"
+                srcSet="/images/pranav-portrait-640.webp 640w, /images/pranav-portrait-800.webp 800w, /images/pranav-portrait-1088.webp 1088w"
+                sizes="(min-width: 1024px) 500px, min(520px, calc(100vw - 3rem))"
+                alt="Portrait of Pranav P S"
+                width={1088}
+                height={1445}
+                fetchPriority="high"
+                className="w-full object-contain"
+              />
+            </picture>
             {flutter || fullstack || marketing ? null : (
               <div className="relative z-20 mt-3 lg:absolute lg:bottom-[7%] lg:right-[-3.5rem] lg:mt-0">
                 <svg
@@ -280,13 +293,13 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
                 <p className="text-sm text-[#a7b5c5]">Code. Create. Grow.</p>
               </div>
             )}
-          </motion.div>
+          </m.div>
         </div>
       </div>
 
       <div className="relative z-10 border-t border-[#1a3038] bg-[#04090c]">
         <div className="mx-auto flex max-w-7xl flex-col px-4 py-3 lg:flex-row lg:items-stretch lg:px-6 lg:py-0">
-          <motion.div
+          <m.div
             className="hero-reveal flex items-center px-2 py-3 lg:w-[230px] lg:shrink-0 lg:border-r lg:border-[#1a3038] lg:pr-6"
             initial={entranceInitial(reduced, { opacity: 0, y: 16 })}
             animate={{ opacity: 1, y: 0 }}
@@ -295,11 +308,11 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#8ea0b0]">
               What can I help you with?
             </p>
-          </motion.div>
+          </m.div>
 
           <div className="grid flex-1 sm:grid-cols-3">
             {services.map((service, index) => (
-              <motion.a
+              <m.a
                 key={service.role}
                 href={toPublicPath(service.path)}
                 onClick={(event) => followRoute(event, service.path)}
@@ -329,7 +342,7 @@ export default function Hero({ onNavigate, flutter = false, fullstack = false, m
                     flutter ? 'group-hover:text-[#027DFD]' : fullstack ? 'group-hover:text-[#FF7A00]' : marketing ? 'group-hover:text-[#FFD000]' : 'group-hover:text-[#00e5e5]'
                   }`}
                 />
-              </motion.a>
+              </m.a>
             ))}
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
+import * as m from 'motion/react-m';
 import { ArrowRight } from 'lucide-react';
 import { formatBlogDate, postsForTrack } from '../data/blogPosts';
 import { BLOG_HUB_PATH, BLOG_TRACKS, toPublicPath } from '../routes';
@@ -51,7 +51,7 @@ export function BlogHub() {
   return (
     <section className="relative z-10 scroll-mt-24 pt-28 pb-20 sm:pt-32">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
-        <motion.header
+        <m.header
           className="max-w-3xl"
           initial={entranceInitial(reduced, { opacity: 0, y: 20 })}
           animate={{ opacity: 1, y: 0 }}
@@ -64,13 +64,13 @@ export function BlogHub() {
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#a7b5c5] sm:text-lg">
             Software writing stays with Flutter and full-stack work. Digital marketing stays on its own.
           </p>
-        </motion.header>
+        </m.header>
 
         <div className="mt-12 grid gap-5 md:grid-cols-2">
           {(Object.keys(tracks) as BlogTrack[]).map((track, index) => {
             const content = tracks[track];
             return (
-              <motion.a
+              <m.a
                 key={track}
                 href={toPublicPath(BLOG_TRACKS[track].path)}
                 onClick={(event) => followRoute(event, BLOG_TRACKS[track].path)}
@@ -90,7 +90,7 @@ export function BlogHub() {
                   Open {BLOG_TRACKS[track].title.toLowerCase()}
                   <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
                 </span>
-              </motion.a>
+              </m.a>
             );
           })}
         </div>
@@ -107,7 +107,7 @@ export function BlogTrackIndex({ track }: { track: BlogTrack }) {
   return (
     <section className="relative z-10 scroll-mt-24 pt-28 pb-20 sm:pt-32">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
-        <motion.header
+        <m.header
           className="max-w-3xl"
           initial={entranceInitial(reduced, { opacity: 0, y: 20 })}
           animate={{ opacity: 1, y: 0 }}
@@ -123,13 +123,13 @@ export function BlogTrackIndex({ track }: { track: BlogTrack }) {
           <RouteLink href={BLOG_HUB_PATH} className="mt-5 inline-flex cursor-pointer text-sm font-semibold text-white/70 hover:text-white">
             Both blogs
           </RouteLink>
-        </motion.header>
+        </m.header>
 
         <ul className="mt-12 flex flex-col gap-4">
           {posts.map((post, index) => {
             const image = post.body.find((block) => block.type === 'image');
             return (
-            <motion.li
+            <m.li
               key={post.slug}
               initial={entranceInitial(reduced, { opacity: 0, y: 18 })}
               animate={{ opacity: 1, y: 0 }}
@@ -147,6 +147,7 @@ export function BlogTrackIndex({ track }: { track: BlogTrack }) {
                     height={image.height}
                     loading="lazy"
                     decoding="async"
+                    fetchPriority="low"
                     className="aspect-video w-full object-cover"
                   />
                 ) : null}
@@ -168,7 +169,7 @@ export function BlogTrackIndex({ track }: { track: BlogTrack }) {
                   </ul>
                 </div>
               </RouteLink>
-            </motion.li>
+            </m.li>
             );
           })}
         </ul>

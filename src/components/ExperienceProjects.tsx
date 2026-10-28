@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'motion/react';
+import * as m from 'motion/react-m';
 import { entranceInitial } from './entrance';
 import ProjectCard, { accentForProduct, type ProjectAccent } from './ProjectCard';
-import { projectMatchesSurface, publicProjects, type ContentRole } from '../data/siteContent';
+import { projectMatchesSurface, projectTypes, publicProjects, type ContentRole } from '../data/siteContent';
 import type { ProductType, ProjectItem } from '../types';
 
 type FilterId = 'all' | ProductType;
@@ -24,7 +24,7 @@ interface ExperienceProjectsProps {
 
 function matchesType(project: ProjectItem, filter: FilterId) {
   if (filter === 'all') return true;
-  return project.productType === filter || project.alsoTypes?.includes(filter);
+  return projectTypes(project).includes(filter);
 }
 
 function usePrefersReducedMotion() {
@@ -70,7 +70,7 @@ export default function ExperienceProjects({
   return (
     <section id="projects" className="relative z-10 scroll-mt-24 border-t border-white/10 bg-black">
       <div className="mx-auto max-w-6xl px-6 py-16 lg:px-8 lg:py-20">
-        <motion.header
+        <m.header
           className="max-w-3xl"
           initial={entranceInitial(reduced, { opacity: 0, y: 18 })}
           whileInView={{ opacity: 1, y: 0 }}
@@ -80,7 +80,7 @@ export default function ExperienceProjects({
           <p className={`text-[11px] font-semibold uppercase tracking-[0.22em] sm:text-xs ${tone}`}>{heading.kicker}</p>
           <h2 className="mt-4 text-[2rem] font-extrabold leading-[1.08] tracking-[-0.03em] text-white sm:text-5xl">{heading.title}</h2>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#c5d2de] sm:text-lg">{heading.body}</p>
-        </motion.header>
+        </m.header>
 
         {showFilters ? (
           <div className="mt-8 flex flex-wrap gap-2" role="group" aria-label="Project type">

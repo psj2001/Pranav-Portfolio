@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { BookOpen, GraduationCap } from 'lucide-react';
-import { motion } from 'motion/react';
+import * as m from 'motion/react-m';
 import { entranceInitial } from './entrance';
 import { education, formatPeriod, training } from '../data/siteContent';
 
@@ -40,7 +40,7 @@ export default function Education({
       className="relative z-10 scroll-mt-24 border-t border-white/10 bg-black"
     >
       <div className="mx-auto max-w-3xl px-6 py-20 lg:px-8 lg:py-24">
-        <motion.header
+        <m.header
           initial={entranceInitial(reduced, { opacity: 0, y: 20 })}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '0px 0px -8% 0px' }}
@@ -55,11 +55,11 @@ export default function Education({
           >
             Study and <span className={accentText}>courses.</span>
           </h2>
-        </motion.header>
+        </m.header>
 
         <div className="mt-10 space-y-6">
           {education.map((item) => (
-            <motion.article
+            <m.article
               key={item.credential}
               className={`border-t pt-6 ${border}`}
               initial={entranceInitial(reduced, { opacity: 0, y: 18 })}
@@ -81,7 +81,7 @@ export default function Education({
                   </p>
                 </div>
               </div>
-            </motion.article>
+            </m.article>
           ))}
         </div>
 
@@ -90,7 +90,7 @@ export default function Education({
             <h3 className={`text-[11px] font-semibold uppercase tracking-[0.22em] ${accentText}`}>Training</h3>
             <div className="mt-4 space-y-6">
               {training.map((item) => (
-                <motion.article
+                <m.article
                   key={item.id}
                   className={`border-t pt-6 ${border}`}
                   initial={entranceInitial(reduced, { opacity: 0, y: 18 })}
@@ -110,7 +110,7 @@ export default function Education({
                       <p className="mt-3 text-sm leading-relaxed text-[#c5d2de] sm:text-base">{formatPeriod(item)}</p>
                     </div>
                   </div>
-                </motion.article>
+                </m.article>
               ))}
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
+import * as m from 'motion/react-m';
 import { ArrowLeft } from 'lucide-react';
 import { findPost, formatBlogDate } from '../data/blogPosts';
 import { BLOG_TRACKS } from '../routes';
@@ -32,7 +32,7 @@ export default function BlogArticle({ track, slug }: { track: BlogTrack; slug: s
   return (
     <article className="relative z-10 scroll-mt-24 pt-28 pb-24 sm:pt-32">
       <div className="mx-auto max-w-3xl px-6 lg:px-8">
-        <motion.div
+        <m.div
           initial={entranceInitial(reduced, { opacity: 0, y: 20 })}
           animate={{ opacity: 1, y: 0 }}
           transition={rise}
@@ -88,6 +88,7 @@ export default function BlogArticle({ track, slug }: { track: BlogTrack; slug: s
                           height={block.height}
                           loading="lazy"
                           decoding="async"
+                          fetchPriority="low"
                           className="h-auto w-full"
                         />
                       </figure>
@@ -109,7 +110,7 @@ export default function BlogArticle({ track, slug }: { track: BlogTrack; slug: s
           ) : (
             <p className="mt-8 text-base leading-relaxed text-[#a7b5c5]">Loading this note.</p>
           )}
-        </motion.div>
+        </m.div>
       </div>
     </article>
   );

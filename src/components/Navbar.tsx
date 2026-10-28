@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
-import { blogDestination, blogFromPath, caseStudyFromPath, goHome, roleFromPath, scrollBehavior, usePathname } from '../routes';
+import { blogDestination, blogFromPath, caseStudyFromPath, goHome, roleFromPath, scrollBehavior, shopifyFromPath, usePathname } from '../routes';
 import RouteLink from './RouteLink';
 
 interface NavbarProps {
@@ -15,6 +15,7 @@ export default function Navbar({ activeSection, flutter = false, fullstack = fal
   const onRolePage = roleFromPath(pathname) !== null;
   const onBlog = blogFromPath(pathname) !== null;
   const onCase = caseStudyFromPath(pathname) !== null;
+  const onShopify = shopifyFromPath(pathname) !== null;
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -64,7 +65,7 @@ export default function Navbar({ activeSection, flutter = false, fullstack = fal
 
   const handleScrollToSegment = (id: string) => {
     setMobileMenuOpen(false);
-    if (onBlog || onCase) {
+    if (onBlog || onCase || onShopify) {
       goHome(id);
       return;
     }

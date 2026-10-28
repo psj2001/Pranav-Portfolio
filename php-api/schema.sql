@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS projects (
   experience_id VARCHAR(64) NULL,
   also_types LONGTEXT NOT NULL,
   audiences LONGTEXT NOT NULL,
-  screenshot LONGTEXT NULL
+  screenshot LONGTEXT NULL,
+  views LONGTEXT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS sessions (

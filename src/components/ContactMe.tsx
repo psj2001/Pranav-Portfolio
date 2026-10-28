@@ -1,8 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Mail, MapPin, Send } from 'lucide-react';
-import { motion } from 'motion/react';
+import * as m from 'motion/react-m';
 import { trackEvent } from '../analytics';
 import { entranceInitial } from './entrance';
+import { clearQueuedInterest, readQueuedInterest } from '../contactIntent';
 import { profile } from '../data/siteContent';
 
 interface ContactMeProps {
@@ -16,6 +17,7 @@ const interests = [
   'Mobile app development',
   'Full-stack web development',
   'Digital marketing',
+  'Shopify',
   'A role',
 ];
 
@@ -46,6 +48,12 @@ export default function ContactMe({
         : 'bg-[#00e5e5] text-[#04181c] hover:bg-[#7af6f6]';
 
   useEffect(() => {
+    const queued = readQueuedInterest();
+    if (queued && interests.includes(queued)) {
+      setInterest(queued);
+      const timer = window.setTimeout(clearQueuedInterest, 0);
+      return () => window.clearTimeout(timer);
+    }
     setInterest(defaultInterest);
   }, [defaultInterest]);
 
@@ -111,7 +119,7 @@ export default function ContactMe({
   return (
     <section id="contact" className="relative z-10 scroll-mt-24 border-t border-white/10 bg-black py-16 lg:py-20">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-12 lg:px-8">
-        <motion.div
+        <m.div
           className="lg:col-span-5"
           initial={entranceInitial(reduced, { opacity: 0, y: 16 })}
           whileInView={{ opacity: 1, y: 0 }}
@@ -145,9 +153,9 @@ export default function ContactMe({
               </a>
             </li>
           </ul>
-        </motion.div>
+        </m.div>
 
-        <motion.div
+        <m.div
           className="lg:col-span-7"
           initial={entranceInitial(reduced, { opacity: 0, y: 16 })}
           whileInView={{ opacity: 1, y: 0 }}
@@ -264,7 +272,7 @@ export default function ContactMe({
               </div>
             </form>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     </section>
   );

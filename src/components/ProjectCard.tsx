@@ -1,12 +1,16 @@
+import { useEffect, useState } from 'react';
 import { trackEvent } from '../analytics';
 import {
   contributionKindLabel,
   engagementLabel,
   productTypeLabel,
   projectPath,
+  projectTypes,
+  projectViews,
+  viewLabel,
 } from '../data/siteContent';
 import { ROLE_ROUTES } from '../routes';
-import type { ProjectItem } from '../types';
+import type { ProjectItem, ProjectView } from '../types';
 import RouteLink from './RouteLink';
 
 const accents = {
@@ -50,20 +54,66 @@ export function accentForProduct(type: ProjectItem['productType']): ProjectAccen
 }
 
 function roleLinks(project: ProjectItem, surface: 'home' | ProjectAccent) {
+  const types = projectTypes(project);
   const links: { href: string; label: string }[] = [];
-  if (project.productType === 'mobile-app' && surface !== 'flutter') {
+  if (types.includes('mobile-app') && surface !== 'flutter') {
     links.push({ href: ROLE_ROUTES.flutter.path, label: 'Flutter developer' });
   }
-  if (
-    (project.productType === 'website' || project.productType === 'dashboard' || project.alsoTypes?.includes('website')) &&
-    surface !== 'fullstack'
-  ) {
+  if ((types.includes('website') || types.includes('dashboard')) && surface !== 'fullstack') {
     links.push({ href: ROLE_ROUTES.fullstack.path, label: 'Full-stack developer' });
   }
-  if ((project.productType === 'marketing' || project.alsoTypes?.includes('marketing')) && surface !== 'marketing') {
+  if (types.includes('marketing') && surface !== 'marketing') {
     links.push({ href: ROLE_ROUTES.marketing.path, label: 'Digital marketer' });
   }
   return links;
+}
+
+export function useSelectedView(project: ProjectItem) {
+  const views = projectViews(project);
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    setIndex(0);
+  }, [project.id]);
+  const selected = views[Math.min(index, Math.max(views.length - 1, 0))] ?? views[0];
+  return { views, selected, setIndex };
+}
+
+export function ViewSwitch({
+  views,
+  selected,
+  onSelect,
+  className,
+}: {
+  views: ProjectView[];
+  selected: ProjectView;
+  onSelect: (index: number) => void;
+  className: string;
+}) {
+  if (views.length < 2) return null;
+  return (
+    <div className="flex flex-wrap gap-2" role="group" aria-label="Show app, website, or CRM">
+      {views.map((view, index) => {
+        const active = view === selected;
+        return (
+          <button
+            key={`${view.type}-${view.label ?? index}`}
+            type="button"
+            aria-pressed={active}
+            onClick={() => onSelect(index)}
+            className={`min-h-11 rounded-full border px-3 py-1 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+              active ? className : 'border-white/15 text-[#d5deea]'
+            }`}
+          >
+            {viewLabel(view)}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function pendingCopy(view: ProjectView) {
+  return view.type === 'website' ? 'Link not published yet.' : 'Screenshot not published yet.';
 }
 
 export default function ProjectCard({
@@ -77,32 +127,51 @@ export default function ProjectCard({
 }) {
   const tone = accents[accent];
   const relatedRoles = roleLinks(project, surface);
+  const { views, selected, setIndex } = useSelectedView(project);
+  const shot = selected?.shots[0];
+  const showSwitch = views.length > 1;
 
   return (
     <article id={`project-${project.id}`} className="scroll-mt-28 flex h-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-[#07141c]">
-      {project.screenshot ? (
+      {shot ? (
         <img
-          src={project.screenshot.src}
-          alt={project.screenshot.alt}
-          width={project.screenshot.width}
-          height={project.screenshot.height}
+          src={shot.src}
+          alt={shot.alt}
+          width={shot.width}
+          height={shot.height}
           loading="lazy"
           decoding="async"
+          fetchPriority="low"
           className="aspect-video w-full object-cover"
         />
       ) : (
         <div className={`flex aspect-video flex-col justify-end border-b p-5 ${tone.border} ${tone.wash}`}>
-          <p className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${tone.text}`}>{productTypeLabel(project.productType)}</p>
-          <h3 className="mt-2 text-2xl font-extrabold tracking-tight text-white">{project.title}</h3>
+          <p className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${tone.text}`}>
+            {selected ? viewLabel(selected) : productTypeLabel(project.productType)}
+          </p>
+          {showSwitch ? (
+            <p className="mt-2 text-sm text-[#c5d2de]">
+              {selected && selected.links.length === 0 ? pendingCopy(selected) : 'Open the link below.'}
+            </p>
+          ) : (
+            <h3 className="mt-2 text-2xl font-extrabold tracking-tight text-white">{project.title}</h3>
+          )}
         </div>
       )}
       <div className="flex flex-1 flex-col p-5 sm:p-6">
-        <div className="flex flex-wrap gap-2">
-          {[project.productType, ...(project.alsoTypes ?? [])].map((type) => (
-            <span key={type} className={`rounded-full border px-3 py-1 text-xs font-semibold ${tone.border} ${tone.text}`}>
-              {productTypeLabel(type)}
+        <div className="flex flex-wrap items-center gap-2">
+          {showSwitch ? (
+            <ViewSwitch
+              views={views}
+              selected={selected}
+              onSelect={setIndex}
+              className={`${tone.border} ${tone.wash} ${tone.text}`}
+            />
+          ) : (
+            <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${tone.border} ${tone.text}`}>
+              {productTypeLabel(project.productType)}
             </span>
-          ))}
+          )}
           {project.engagement ? (
             <span className="rounded-full border border-white/15 px-3 py-1 text-xs font-semibold text-[#d5deea]">
               {engagementLabel(project.engagement)}
@@ -114,7 +183,7 @@ export default function ProjectCard({
             </span>
           ) : null}
         </div>
-        {project.screenshot ? <h3 className="mt-4 text-xl font-bold tracking-tight text-white">{project.title}</h3> : null}
+        {shot || showSwitch ? <h3 className="mt-4 text-xl font-bold tracking-tight text-white">{project.title}</h3> : null}
         <p className="mt-4 text-sm leading-relaxed text-[#c5d2de] sm:text-base">{project.summary}</p>
         {project.contribution ? <p className="mt-3 text-sm leading-relaxed text-[#d5deea] sm:text-base">{project.contribution}</p> : null}
         {project.technologies.length > 0 ? (
@@ -133,7 +202,7 @@ export default function ProjectCard({
           >
             View case study
           </RouteLink>
-          {project.links.map((link) => (
+          {(selected?.links ?? project.links).map((link) => (
             <a
               key={link.href}
               href={link.href}

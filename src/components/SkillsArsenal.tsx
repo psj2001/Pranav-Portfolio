@@ -12,7 +12,7 @@ import {
   Users,
   Workflow,
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import * as m from 'motion/react-m';
 import { entranceInitial } from './entrance';
 import type { SimpleIcon } from 'simple-icons';
 import {
@@ -118,7 +118,17 @@ function isDarkBrand(hex: string) {
   return luminance < 0.22;
 }
 
-function SkillMark({ skill, flutter = false, fullstack = false, marketing = false }: { skill: SkillItem; flutter?: boolean; fullstack?: boolean; marketing?: boolean }) {
+function SkillMark({
+  skill,
+  flutter = false,
+  fullstack = false,
+  marketing = false,
+}: {
+  skill: SkillItem;
+  flutter?: boolean;
+  fullstack?: boolean;
+  marketing?: boolean;
+}) {
   if (skill.mark.kind === 'brand') {
     const icon = brands[skill.mark.slug];
     if (!icon) {
@@ -149,7 +159,17 @@ function SkillMark({ skill, flutter = false, fullstack = false, marketing = fals
   return <Monogram letters={skill.mark.letters} flutter={flutter} fullstack={fullstack} marketing={marketing} />;
 }
 
-function Monogram({ letters, flutter = false, fullstack = false, marketing = false }: { letters: string; flutter?: boolean; fullstack?: boolean; marketing?: boolean }) {
+function Monogram({
+  letters,
+  flutter = false,
+  fullstack = false,
+  marketing = false,
+}: {
+  letters: string;
+  flutter?: boolean;
+  fullstack?: boolean;
+  marketing?: boolean;
+}) {
   return (
     <span
       aria-hidden="true"
@@ -189,7 +209,7 @@ export default function SkillsArsenal({ surface = 'home', categoryIds, flutter =
       className="relative z-10 scroll-mt-24 overflow-hidden border-t border-white/10 bg-black"
     >
       <div className="relative mx-auto max-w-6xl px-6 py-20 lg:px-8 lg:py-24">
-        <motion.header
+        <m.header
           className="skills-reveal max-w-3xl"
           initial={entranceInitial(reduced, { opacity: 0, y: 20 })}
           whileInView={{ opacity: 1, y: 0 }}
@@ -210,11 +230,11 @@ export default function SkillsArsenal({ surface = 'home', categoryIds, flutter =
               ? 'Social content, SEO, ads, and the website skills that support landing pages, tracking, and site updates.'
               : 'Skills and tools I use for apps, websites, and marketing.'}
           </p>
-        </motion.header>
+        </m.header>
 
         <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {primary.map((category, categoryIndex) => (
-            <motion.article
+            <m.article
               key={category.id}
               aria-labelledby={`skills-${category.id}`}
               className={`skills-reveal rounded-2xl border bg-[#07141c] p-5 transition-[border-color,box-shadow] duration-300 sm:p-6 ${
@@ -238,8 +258,9 @@ export default function SkillsArsenal({ surface = 'home', categoryIds, flutter =
               {category.note ? <p className="mt-2 text-sm leading-relaxed text-[#c5d2de]">{category.note}</p> : null}
               <ul className="mt-5 flex flex-wrap gap-x-2 gap-y-4">
                 {category.skills.map((skill, skillIndex) => (
-                  <motion.li
+                  <m.li
                     key={skill.name}
+                    aria-label={skill.name}
                     className={`skills-reveal flex w-[6.5rem] max-w-full flex-col items-center gap-2 rounded-xl border border-transparent px-1 py-1 text-center transition-[border-color,background-color] duration-300 hover:bg-[#0c1c24] ${
                       flutter ? 'hover:border-[#027DFD]/55' : fullstack ? 'hover:border-[#FF7A00]/55' : marketing ? 'hover:border-[#FFD000]/55' : 'hover:border-[#00e5e5]/55'
                     }`}
@@ -254,10 +275,10 @@ export default function SkillsArsenal({ surface = 'home', categoryIds, flutter =
                   >
                     <SkillMark skill={skill} flutter={flutter} fullstack={fullstack} marketing={marketing} />
                     <span className="text-xs leading-4 text-[#c5d2de]">{skill.name}</span>
-                  </motion.li>
+                  </m.li>
                 ))}
               </ul>
-            </motion.article>
+            </m.article>
           ))}
         </div>
         {toolGroups.map((category) => (
@@ -266,7 +287,7 @@ export default function SkillsArsenal({ surface = 'home', categoryIds, flutter =
             {category.note ? <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#c5d2de]">{category.note}</p> : null}
             <ul className="mt-4 flex flex-wrap gap-2">
               {category.skills.map((skill) => (
-                <li key={skill.name} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/10 px-3 text-sm text-[#d5deea]">
+                <li key={skill.name} aria-label={skill.name} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/10 px-3 text-sm text-[#d5deea]">
                   <SkillMark skill={skill} flutter={flutter} fullstack={fullstack} marketing={marketing} />
                   {skill.name}
                 </li>
